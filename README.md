@@ -6,7 +6,7 @@ The product goal is to help players avoid obvious bad purchases, discover conser
 
 ## Current Status
 
-This repository currently contains project scaffolding only. Addon behavior, Lua modules, UI, and data tables have not been implemented yet.
+This repository now contains a Phase 1 MVP spine: addon lifecycle modules, a conservative Lua ontology, small high-confidence seed data, a guarded targeted Auction House query adapter, one-line tooltip hints, and an explicit comparison panel.
 
 ## Scope
 
@@ -28,9 +28,9 @@ Out of scope for the initial product:
 
 - `AhSense/` - addon folder intended to be installed under `Interface/AddOns/AhSense`
 - `AhSense/AhSense.toc` - addon metadata
-- `AhSense/Core/` - future addon lifecycle and shared runtime modules
-- `AhSense/Data/` - future curated ontology and vendor mapping data
-- `AhSense/UI/` - future tooltip, AH, and posting UI modules
+- `AhSense/Core/` - addon lifecycle, configuration, recommendation, and Auction House query modules
+- `AhSense/Data/` - curated ontology and seed vendor, consumable, and profession-tool data
+- `AhSense/UI/` - tooltip hint and comparison panel modules
 - `AhSense/Integrations/` - future optional compatibility layers
 - `docs/` - design notes for architecture, ontology, and releases
 - `docs/spec.md` - product specification
