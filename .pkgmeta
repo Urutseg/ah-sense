@@ -1,0 +1,7 @@
+package-as: AhSense
+
+ignore:
+  - .github
+  - docs
+  - CONTRIBUTING.md
+  - README.md

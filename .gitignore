@@ -1,0 +1,20 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local addon/package output
+dist/
+release/
+*.zip
+
+# WoW runtime/local state
+WTF/
+Cache/
+Logs/
+
+# Tooling caches
+.cache/
+.tmp/
+node_modules/

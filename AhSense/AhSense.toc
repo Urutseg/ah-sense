@@ -1,0 +1,8 @@
+## Interface: 120000
+## Title: Auction House Sense
+## Notes: Lightweight Auction House sanity hints and conservative alternative comparisons.
+## Author: TBD
+## Version: 0.0.0-dev
+## X-Category: Auction
+## X-License: TBD
+## SavedVariables: AhSenseDB
