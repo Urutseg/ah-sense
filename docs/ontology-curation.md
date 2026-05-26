@@ -22,6 +22,8 @@ Before adding or keeping an ontology entry, verify:
   quality or item-level variants, same profession slot, or exact utility match.
 - The items can plausibly appear on the Auction House. Bind-on-pickup items are
   irrelevant for AhSense recommendations and must not ship in ontology groups.
+- Fleeting potion and flask variants are temporary cauldron-created items, not
+  normal Auction House candidates, and must not ship in ontology groups.
 - The recommendation does not depend on class, spec, encounter, simulation,
   embellishment, proc behavior, or player preference.
 - The entry has `confidence_tier`, `passive_eligible`, and `rationale`.

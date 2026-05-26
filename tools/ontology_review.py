@@ -36,6 +36,7 @@ REQUIRED_ITEM_COLUMNS = {
     "binding_type",
 }
 AUCTIONABLE_FILTER = "(binding_type is null or binding_type != 'ON_ACQUIRE')"
+EXCLUDED_NAME_FILTER = "name not like 'Fleeting %'"
 
 
 def slug(value: str) -> str:
@@ -194,10 +195,11 @@ def build_consumable_same_name_candidates(con: sqlite3.Connection) -> list[dict[
         from items
         where item_class_id = 0
           and {auctionable}
+          and {excluded_names}
           and spell_ids_json is not null
           and spell_ids_json != '[]'
         order by item_subclass_name, name, level desc, item_id
-    """.format(auctionable=AUCTIONABLE_FILTER)
+    """.format(auctionable=AUCTIONABLE_FILTER, excluded_names=EXCLUDED_NAME_FILTER)
     buckets: dict[tuple[Any, ...], list[sqlite3.Row]] = {}
     for row in con.execute(sql):
         if row["item_subclass_name"] not in allowed_subclasses:
@@ -244,10 +246,11 @@ def build_consumable_same_spell_candidates(con: sqlite3.Connection) -> list[dict
         from items
         where item_class_id = 0
           and {auctionable}
+          and {excluded_names}
           and spell_ids_json is not null
           and spell_ids_json != '[]'
         order by item_subclass_name, spell_ids_json, name, item_id
-    """.format(auctionable=AUCTIONABLE_FILTER)
+    """.format(auctionable=AUCTIONABLE_FILTER, excluded_names=EXCLUDED_NAME_FILTER)
     buckets: dict[tuple[Any, ...], list[sqlite3.Row]] = {}
     for row in con.execute(sql):
         if row["item_subclass_name"] not in allowed_subclasses:

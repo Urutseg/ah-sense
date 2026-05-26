@@ -27,7 +27,9 @@ enriched schema required for candidate generation, then reports the generated
 candidate count.
 
 The generator excludes bind-on-pickup rows because those items cannot appear on
-the Auction House and are irrelevant to addon recommendations.
+the Auction House and are irrelevant to addon recommendations. It also excludes
+`Fleeting` consumable variants because those are temporary cauldron-created
+items rather than normal Auction House candidates.
 
 ## Review UI
 

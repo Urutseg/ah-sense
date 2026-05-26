@@ -72,78 +72,6 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-flask-of-the-shattered-sun-789d
     },
 })
 
-ns.Ontology.AddGroup("midnight-flasks-and-phials-fleeting-flask-of-thalassian-resistance-13c088a2", {
-    category = "consumable_family",
-    confidence_tier = "tier1",
-    passive_eligible = false,
-    rationale = "Same Fleeting Flask of Thalassian Resistance effect across item-level variants",
-    hint = "Comparable consumables available",
-    items = {
-        {
-            itemID = 245926,
-            name = "Fleeting Flask of Thalassian Resistance",
-        },
-        {
-            itemID = 245927,
-            name = "Fleeting Flask of Thalassian Resistance",
-        },
-    },
-})
-
-ns.Ontology.AddGroup("midnight-flasks-and-phials-fleeting-flask-of-the-blood-knights-eebfb9b3", {
-    category = "consumable_family",
-    confidence_tier = "tier1",
-    passive_eligible = false,
-    rationale = "Same Fleeting Flask of the Blood Knights effect across item-level variants",
-    hint = "Comparable consumables available",
-    items = {
-        {
-            itemID = 245931,
-            name = "Fleeting Flask of the Blood Knights",
-        },
-        {
-            itemID = 245930,
-            name = "Fleeting Flask of the Blood Knights",
-        },
-    },
-})
-
-ns.Ontology.AddGroup("midnight-flasks-and-phials-fleeting-flask-of-the-magisters-33bbe65e", {
-    category = "consumable_family",
-    confidence_tier = "tier1",
-    passive_eligible = false,
-    rationale = "Same Fleeting Flask of the Magisters effect across item-level variants",
-    hint = "Comparable consumables available",
-    items = {
-        {
-            itemID = 245933,
-            name = "Fleeting Flask of the Magisters",
-        },
-        {
-            itemID = 245932,
-            name = "Fleeting Flask of the Magisters",
-        },
-    },
-})
-
-ns.Ontology.AddGroup("midnight-flasks-and-phials-fleeting-flask-of-the-shattered-sun-8e391cab", {
-    category = "consumable_family",
-    confidence_tier = "tier1",
-    passive_eligible = false,
-    rationale = "Same Fleeting Flask of the Shattered Sun effect across item-level variants",
-    hint = "Comparable consumables available",
-    items = {
-        {
-            itemID = 245929,
-            name = "Fleeting Flask of the Shattered Sun",
-        },
-        {
-            itemID = 245928,
-            name = "Fleeting Flask of the Shattered Sun",
-        },
-    },
-})
-
 ns.Ontology.AddGroup("midnight-flasks-and-phials-haranir-phial-of-finesse-243c05d4", {
     category = "consumable_family",
     confidence_tier = "tier1",
@@ -266,42 +194,6 @@ ns.Ontology.AddGroup("midnight-potions-entropic-extract-bdc40d66", {
         {
             itemID = 268954,
             name = "Entropic Extract",
-        },
-    },
-})
-
-ns.Ontology.AddGroup("midnight-potions-fleeting-light-s-potential-801b7fa7", {
-    category = "consumable_family",
-    confidence_tier = "tier1",
-    passive_eligible = false,
-    rationale = "Same Fleeting Light's Potential effect across item-level variants",
-    hint = "Comparable consumables available",
-    items = {
-        {
-            itemID = 245898,
-            name = "Fleeting Light's Potential",
-        },
-        {
-            itemID = 245897,
-            name = "Fleeting Light's Potential",
-        },
-    },
-})
-
-ns.Ontology.AddGroup("midnight-potions-fleeting-potion-of-zealotry-f5194c4d", {
-    category = "consumable_family",
-    confidence_tier = "tier1",
-    passive_eligible = false,
-    rationale = "Same Fleeting Potion of Zealotry effect across item-level variants",
-    hint = "Comparable consumables available",
-    items = {
-        {
-            itemID = 245901,
-            name = "Fleeting Potion of Zealotry",
-        },
-        {
-            itemID = 245900,
-            name = "Fleeting Potion of Zealotry",
         },
     },
 })

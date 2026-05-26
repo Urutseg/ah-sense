@@ -60,6 +60,8 @@ Observed limitations:
   prove vendor availability for passive hints.
 - Bind-on-pickup items are not useful for AhSense ontology groups because they
   cannot appear on the Auction House.
+- Fleeting potion and flask variants are temporary cauldron-created items, so
+  they are excluded from Auction House ontology candidates.
 - No separate crafting quality or reagent quality field was observed in the
   current candidate detail payloads. Quality and `bonus_list` are preserved for
   review, but quality-tier equivalence still needs human validation.
