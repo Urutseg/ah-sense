@@ -24,7 +24,10 @@ python tools\bnet_item_import.py --endpoints research\item-db\endpoints.midnight
 ```
 
 The importer stores normalized item rows in SQLite and raw endpoint payloads for
-later ontology research. It does not change shipped addon data.
+later ontology research. Use `--enrich-details` to fetch per-item detail
+payloads and normalize preview stats, spell/equip text, profession
+requirements, descriptions, limit categories, and bonus lists. It does not
+change shipped addon data.
 
 Large search endpoints should use `range` slicing. The Battle.net search API can
 cap broad result sets, so the Midnight manifest narrows by item ID range and

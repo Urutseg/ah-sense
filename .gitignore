@@ -24,10 +24,12 @@ Logs/
 .tmp/
 node_modules/
 __pycache__/
+.venv/
 
 # Local research data generated from Battle.net API
 research/item-db/*.sqlite
 research/item-db/*.sqlite-*
 research/item-db/*.jsonl
+research/ontology-review/
 
 AGENTS.md

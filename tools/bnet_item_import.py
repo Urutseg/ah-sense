@@ -183,10 +183,58 @@ def init_db(path: Path) -> sqlite3.Connection:
             sell_price INTEGER,
             is_stackable INTEGER,
             is_equippable INTEGER,
+            binding_type TEXT,
+            binding_name TEXT,
+            description TEXT,
+            limit_category TEXT,
+            bonus_list_json TEXT,
+            stat_signature TEXT,
+            spell_ids_json TEXT,
+            equip_use_text TEXT,
+            required_profession_id INTEGER,
+            required_profession_name TEXT,
+            required_profession_skill INTEGER,
+            required_profession_display TEXT,
+            modified_crafting_stat_type TEXT,
+            modified_crafting_stat_name TEXT,
             expansion TEXT,
             source_endpoint TEXT,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
             raw_json TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS item_details (
+            item_id INTEGER PRIMARY KEY,
+            detail_url TEXT NOT NULL,
+            fetched_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            raw_json TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS item_stats (
+            item_id INTEGER NOT NULL,
+            stat_type TEXT,
+            stat_name TEXT,
+            stat_value INTEGER,
+            is_equip_bonus INTEGER,
+            display_string TEXT,
+            PRIMARY KEY (item_id, stat_type)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS item_spells (
+            item_id INTEGER NOT NULL,
+            spell_id INTEGER NOT NULL,
+            spell_name TEXT,
+            description TEXT,
+            PRIMARY KEY (item_id, spell_id)
         )
         """
     )
@@ -209,6 +257,20 @@ def init_db(path: Path) -> sqlite3.Connection:
     ensure_column(conn, "items", "sell_price", "INTEGER")
     ensure_column(conn, "items", "is_stackable", "INTEGER")
     ensure_column(conn, "items", "is_equippable", "INTEGER")
+    ensure_column(conn, "items", "binding_type", "TEXT")
+    ensure_column(conn, "items", "binding_name", "TEXT")
+    ensure_column(conn, "items", "description", "TEXT")
+    ensure_column(conn, "items", "limit_category", "TEXT")
+    ensure_column(conn, "items", "bonus_list_json", "TEXT")
+    ensure_column(conn, "items", "stat_signature", "TEXT")
+    ensure_column(conn, "items", "spell_ids_json", "TEXT")
+    ensure_column(conn, "items", "equip_use_text", "TEXT")
+    ensure_column(conn, "items", "required_profession_id", "INTEGER")
+    ensure_column(conn, "items", "required_profession_name", "TEXT")
+    ensure_column(conn, "items", "required_profession_skill", "INTEGER")
+    ensure_column(conn, "items", "required_profession_display", "TEXT")
+    ensure_column(conn, "items", "modified_crafting_stat_type", "TEXT")
+    ensure_column(conn, "items", "modified_crafting_stat_name", "TEXT")
     return conn
 
 
@@ -260,6 +322,10 @@ def optional_int(value: Any) -> int | None:
     return value if isinstance(value, int) else None
 
 
+def optional_text(value: Any) -> str | None:
+    return value if isinstance(value, str) else None
+
+
 def normalize_item(result: dict[str, Any], locale: str) -> dict[str, Any] | None:
     data = result.get("data") if "data" in result else result
     if not isinstance(data, dict):
@@ -292,6 +358,116 @@ def normalize_item(result: dict[str, Any], locale: str) -> dict[str, Any] | None
         "is_stackable": bool_int(data.get("is_stackable")),
         "is_equippable": bool_int(data.get("is_equippable")),
         "raw_json": json.dumps(data, ensure_ascii=False, sort_keys=True),
+    }
+
+
+def detail_preview(data: dict[str, Any]) -> dict[str, Any]:
+    preview = data.get("preview_item")
+    return preview if isinstance(preview, dict) else {}
+
+
+def normalize_stats(preview: dict[str, Any]) -> list[dict[str, Any]]:
+    stats = preview.get("stats")
+    if not isinstance(stats, list):
+        return []
+
+    normalized = []
+    for stat in stats:
+        if not isinstance(stat, dict):
+            continue
+        stat_type = stat.get("type")
+        display = stat.get("display")
+        normalized.append(
+            {
+                "stat_type": stat_type.get("type")
+                if isinstance(stat_type, dict)
+                else None,
+                "stat_name": stat_type.get("name")
+                if isinstance(stat_type, dict)
+                else None,
+                "stat_value": optional_int(stat.get("value")),
+                "is_equip_bonus": bool_int(stat.get("is_equip_bonus")),
+                "display_string": display.get("display_string")
+                if isinstance(display, dict)
+                else None,
+            }
+        )
+    return normalized
+
+
+def normalize_spells(preview: dict[str, Any]) -> list[dict[str, Any]]:
+    spells = preview.get("spells")
+    if not isinstance(spells, list):
+        return []
+
+    normalized = []
+    for spell_row in spells:
+        if not isinstance(spell_row, dict):
+            continue
+        spell = spell_row.get("spell")
+        if not isinstance(spell, dict) or not isinstance(spell.get("id"), int):
+            continue
+        normalized.append(
+            {
+                "spell_id": spell["id"],
+                "spell_name": optional_text(spell.get("name")),
+                "description": optional_text(spell_row.get("description")),
+            }
+        )
+    return normalized
+
+
+def stat_signature(stats: list[dict[str, Any]]) -> str | None:
+    if not stats:
+        return None
+    parts = []
+    for stat in sorted(stats, key=lambda row: row.get("stat_type") or ""):
+        parts.append(f"{stat.get('stat_type')}={stat.get('stat_value')}")
+    return "|".join(parts)
+
+
+def normalize_detail(data: dict[str, Any]) -> dict[str, Any]:
+    preview = detail_preview(data)
+    requirements = preview.get("requirements")
+    requirements = requirements if isinstance(requirements, dict) else {}
+    skill = requirements.get("skill")
+    skill = skill if isinstance(skill, dict) else {}
+    profession = skill.get("profession")
+    profession = profession if isinstance(profession, dict) else {}
+    binding = preview.get("binding")
+    binding = binding if isinstance(binding, dict) else {}
+    modified = preview.get("modified_crafting_stat")
+    modified = modified if isinstance(modified, dict) else {}
+    stats = normalize_stats(preview)
+    spells = normalize_spells(preview)
+
+    return {
+        "binding_type": optional_text(binding.get("type")),
+        "binding_name": optional_text(binding.get("name")),
+        "description": optional_text(data.get("description"))
+        or optional_text(preview.get("description")),
+        "limit_category": optional_text(preview.get("limit_category")),
+        "bonus_list_json": json.dumps(preview.get("bonus_list"), ensure_ascii=False)
+        if isinstance(preview.get("bonus_list"), list)
+        else None,
+        "stat_signature": stat_signature(stats),
+        "spell_ids_json": json.dumps(
+            [spell["spell_id"] for spell in spells], ensure_ascii=False
+        )
+        if spells
+        else None,
+        "equip_use_text": "\n".join(
+            spell["description"] for spell in spells if spell.get("description")
+        )
+        or None,
+        "required_profession_id": optional_int(profession.get("id")),
+        "required_profession_name": optional_text(profession.get("name")),
+        "required_profession_skill": optional_int(skill.get("level")),
+        "required_profession_display": optional_text(skill.get("display_string")),
+        "modified_crafting_stat_type": optional_text(modified.get("type")),
+        "modified_crafting_stat_name": optional_text(modified.get("name")),
+        "stats": stats,
+        "spells": spells,
     }
 
 
@@ -368,6 +544,167 @@ def upsert_items(
         )
         count += 1
     return count
+
+
+def upsert_item_detail(
+    conn: sqlite3.Connection,
+    *,
+    item_id: int,
+    detail_url: str,
+    payload: dict[str, Any],
+) -> None:
+    detail = normalize_detail(payload)
+    conn.execute(
+        """
+        INSERT INTO item_details (item_id, detail_url, fetched_at, raw_json)
+        VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+        ON CONFLICT(item_id) DO UPDATE SET
+            detail_url = excluded.detail_url,
+            fetched_at = CURRENT_TIMESTAMP,
+            raw_json = excluded.raw_json
+        """,
+        (item_id, redact_url(detail_url), json.dumps(payload, ensure_ascii=False)),
+    )
+    conn.execute(
+        """
+        UPDATE items SET
+            binding_type = ?,
+            binding_name = ?,
+            description = ?,
+            limit_category = ?,
+            bonus_list_json = ?,
+            stat_signature = ?,
+            spell_ids_json = ?,
+            equip_use_text = ?,
+            required_profession_id = ?,
+            required_profession_name = ?,
+            required_profession_skill = ?,
+            required_profession_display = ?,
+            modified_crafting_stat_type = ?,
+            modified_crafting_stat_name = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE item_id = ?
+        """,
+        (
+            detail["binding_type"],
+            detail["binding_name"],
+            detail["description"],
+            detail["limit_category"],
+            detail["bonus_list_json"],
+            detail["stat_signature"],
+            detail["spell_ids_json"],
+            detail["equip_use_text"],
+            detail["required_profession_id"],
+            detail["required_profession_name"],
+            detail["required_profession_skill"],
+            detail["required_profession_display"],
+            detail["modified_crafting_stat_type"],
+            detail["modified_crafting_stat_name"],
+            item_id,
+        ),
+    )
+    conn.execute("DELETE FROM item_stats WHERE item_id = ?", (item_id,))
+    conn.executemany(
+        """
+        INSERT INTO item_stats (
+            item_id, stat_type, stat_name, stat_value, is_equip_bonus,
+            display_string
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                item_id,
+                stat["stat_type"],
+                stat["stat_name"],
+                stat["stat_value"],
+                stat["is_equip_bonus"],
+                stat["display_string"],
+            )
+            for stat in detail["stats"]
+        ],
+    )
+    conn.execute("DELETE FROM item_spells WHERE item_id = ?", (item_id,))
+    conn.executemany(
+        """
+        INSERT OR REPLACE INTO item_spells (
+            item_id, spell_id, spell_name, description
+        )
+        VALUES (?, ?, ?, ?)
+        """,
+        [
+            (
+                item_id,
+                spell["spell_id"],
+                spell["spell_name"],
+                spell["description"],
+            )
+            for spell in detail["spells"]
+        ],
+    )
+
+
+def fetch_item_detail(
+    item_id: int,
+    *,
+    api_base_url: str,
+    region: str,
+    locale: str,
+    namespace: str,
+    token: str,
+    auth_mode: str,
+) -> tuple[int, str, dict[str, Any]]:
+    url = build_url(
+        {"path": f"/data/wow/item/{item_id}", "params": {}},
+        api_base_url=api_base_url,
+        region=region,
+        locale=locale,
+        namespace=namespace,
+        token=token if auth_mode == "query" else None,
+    )
+    headers = {}
+    if auth_mode == "header":
+        headers["Authorization"] = f"Bearer {token}"
+    return item_id, url, request_json(url, headers=headers)
+
+
+def enrich_item_details(
+    conn: sqlite3.Connection,
+    *,
+    api_base_url: str,
+    region: str,
+    locale: str,
+    namespace: str,
+    token: str,
+    auth_mode: str,
+    max_workers: int,
+) -> int:
+    item_ids = [
+        row[0]
+        for row in conn.execute("SELECT item_id FROM items ORDER BY item_id").fetchall()
+    ]
+    enriched = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(
+                fetch_item_detail,
+                item_id,
+                api_base_url=api_base_url,
+                region=region,
+                locale=locale,
+                namespace=namespace,
+                token=token,
+                auth_mode=auth_mode,
+            )
+            for item_id in item_ids
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            item_id, url, payload = future.result()
+            upsert_item_detail(conn, item_id=item_id, detail_url=url, payload=payload)
+            enriched += 1
+            if enriched % 100 == 0:
+                conn.commit()
+    conn.commit()
+    return enriched
 
 
 def page_count(payload: dict[str, Any]) -> int | None:
@@ -505,6 +842,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--database", type=Path)
     parser.add_argument("--jsonl", type=Path)
     parser.add_argument("--append-jsonl", action="store_true")
+    parser.add_argument("--enrich-details", action="store_true")
+    parser.add_argument(
+        "--details-only",
+        action="store_true",
+        help="skip endpoint imports and enrich details for existing database rows",
+    )
     parser.add_argument("--max-workers", type=int)
     return parser.parse_args()
 
@@ -540,7 +883,7 @@ def main() -> int:
     jsonl_path = args.jsonl or output_dir / endpoint_config.get(
         "jsonl", f"{expansion}-items.raw.jsonl"
     )
-    if jsonl_path.exists() and not args.append_jsonl:
+    if jsonl_path.exists() and not args.append_jsonl and not args.details_only:
         jsonl_path.unlink()
     token = fetch_token(
         require_env("BN_CLIENT_ID", "BATTLENET_CLIENT_ID"),
@@ -550,25 +893,41 @@ def main() -> int:
 
     conn = init_db(database)
     imported_total = 0
-    for endpoint in endpoint_config.get("endpoints", []):
-        for expanded_endpoint in expand_range_endpoint(endpoint):
-            imported_total += import_endpoint(
-                conn,
-                jsonl_path,
-                expanded_endpoint,
-                api_base_url=api_base_url,
-                region=region,
-                locale=locale,
-                namespace=namespace,
-                token=token,
-                auth_mode=auth_mode,
-                expansion=expansion,
-                max_workers=max_workers,
-            )
+    if not args.details_only:
+        for endpoint in endpoint_config.get("endpoints", []):
+            for expanded_endpoint in expand_range_endpoint(endpoint):
+                imported_total += import_endpoint(
+                    conn,
+                    jsonl_path,
+                    expanded_endpoint,
+                    api_base_url=api_base_url,
+                    region=region,
+                    locale=locale,
+                    namespace=namespace,
+                    token=token,
+                    auth_mode=auth_mode,
+                    expansion=expansion,
+                    max_workers=max_workers,
+                )
+    enriched_total = 0
+    if args.enrich_details or args.details_only:
+        enriched_total = enrich_item_details(
+            conn,
+            api_base_url=api_base_url,
+            region=region,
+            locale=locale,
+            namespace=namespace,
+            token=token,
+            auth_mode=auth_mode,
+            max_workers=max_workers,
+        )
 
     conn.close()
     print(f"Imported {imported_total} item rows into {database}")
-    print(f"Wrote raw payloads to {jsonl_path}")
+    if enriched_total:
+        print(f"Enriched {enriched_total} item detail rows")
+    if not args.details_only:
+        print(f"Wrote raw payloads to {jsonl_path}")
     return 0
 
 

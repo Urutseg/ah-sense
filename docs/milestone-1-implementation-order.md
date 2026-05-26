@@ -24,8 +24,8 @@ This order keeps runtime foundations ahead of data, data ahead of live Auction H
 ## Current Curated Seeds
 
 - Vendor mappings: `Crystal Vial`, `Enchanting Vellum`; passive eligible because these are manually reviewed vendor-sold supplies.
-- Consumable families: `Silvermoon Health Potion`, `Lightfused Mana Potion`; active only, same Midnight item across item-level variants.
-- Profession tools: Herbalism epic headwear; active only, same Midnight profession-equipment role by manual name review.
+- Consumable families: reviewed Midnight potion, flask, and phial item-level variants; active only.
+- Profession tools: no current shipped groups. Generated exact-match candidates were removed because they are bind-on-pickup and cannot appear on the Auction House.
 
 ## Follow-up Runtime Checks
 
