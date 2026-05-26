@@ -3,6 +3,7 @@ local _, ns = ...
 local Ontology = {
     entries = {},
     groups = {},
+    validationErrors = {},
     confidence = {
         tier1 = {
             label = "High confidence",
@@ -10,18 +11,74 @@ local Ontology = {
         tier2 = {
             label = "Medium confidence",
         },
+        tier3 = {
+            label = "Deferred",
+        },
     },
 }
 
 ns.Ontology = Ontology
 
+local function IsBlank(value)
+    return value == nil or value == ""
+end
+
+local function AddValidationError(message)
+    table.insert(Ontology.validationErrors, message)
+    if ns.Debug then
+        ns.Debug(message)
+    end
+end
+
+local function ConfidenceTier(value)
+    return value.confidence_tier or value.confidence
+end
+
+local function ValidateRequiredFields(scope, value)
+    if IsBlank(value.category) then
+        return false, scope .. " missing category"
+    end
+
+    local confidenceTier = ConfidenceTier(value)
+    if IsBlank(confidenceTier) then
+        return false, scope .. " missing confidence_tier"
+    end
+
+    if not Ontology.confidence[confidenceTier] then
+        return false, scope .. " has unknown confidence_tier: " .. tostring(confidenceTier)
+    end
+
+    if IsBlank(value.rationale) then
+        return false, scope .. " missing rationale"
+    end
+
+    return true
+end
+
+local function NormalizeAlternative(alternative, fallbackRationale)
+    if type(alternative) ~= "table" then
+        return nil
+    end
+
+    local normalized = ns.Util.CopyTable(alternative)
+    normalized.confidence_tier = ConfidenceTier(normalized) or "tier2"
+    normalized.confidence = normalized.confidence_tier
+    normalized.passive_eligible = normalized.passive_eligible == true
+    normalized.rationale = normalized.rationale or fallbackRationale
+    return normalized
+end
+
 local function NormalizeEntry(itemID, entry)
     entry.itemID = itemID
-    entry.alternatives = entry.alternatives or {}
-    entry.confidence_tier = entry.confidence_tier or entry.confidence or "tier1"
+    entry.confidence_tier = ConfidenceTier(entry)
     entry.confidence = entry.confidence_tier
     entry.passive_eligible = entry.passive_eligible == true
-    entry.rationale = entry.rationale or "Evidence-backed alternative"
+    entry.alternatives = entry.alternatives or {}
+
+    for index, alternative in ipairs(entry.alternatives) do
+        entry.alternatives[index] = NormalizeAlternative(alternative, entry.rationale)
+    end
+
     return entry
 end
 
@@ -30,7 +87,14 @@ function Ontology.AddEntry(itemID, entry)
         return
     end
 
+    local isValid, reason = ValidateRequiredFields("Entry " .. tostring(itemID), entry)
+    if not isValid then
+        AddValidationError(reason)
+        return false, reason
+    end
+
     Ontology.entries[itemID] = NormalizeEntry(itemID, entry)
+    return true
 end
 
 function Ontology.AddGroup(groupID, group)
@@ -38,11 +102,16 @@ function Ontology.AddGroup(groupID, group)
         return
     end
 
+    local isValid, reason = ValidateRequiredFields("Group " .. groupID, group)
+    if not isValid then
+        AddValidationError(reason)
+        return false, reason
+    end
+
     group.id = groupID
-    group.confidence_tier = group.confidence_tier or group.confidence or "tier1"
+    group.confidence_tier = ConfidenceTier(group)
     group.confidence = group.confidence_tier
     group.passive_eligible = group.passive_eligible == true
-    group.rationale = group.rationale or "Comparable utility"
     group.items = group.items or {}
     Ontology.groups[groupID] = group
 
@@ -57,7 +126,8 @@ function Ontology.AddGroup(groupID, group)
                         name = other.name,
                         rationale = other.rationale or group.rationale,
                         confidence_tier = other.confidence_tier or other.confidence or group.confidence_tier,
-                        passive_eligible = other.passive_eligible == true or group.passive_eligible == true,
+                        passive_eligible = (other.passive_eligible == true or group.passive_eligible == true)
+                            and (other.confidence_tier or other.confidence or group.confidence_tier) == "tier1",
                         groupID = groupID,
                     })
                 end
@@ -67,7 +137,8 @@ function Ontology.AddGroup(groupID, group)
                 name = item.name,
                 category = group.category,
                 confidence_tier = item.confidence_tier or item.confidence or group.confidence_tier,
-                passive_eligible = item.passive_eligible == true or group.passive_eligible == true,
+                passive_eligible = (item.passive_eligible == true or group.passive_eligible == true)
+                    and (item.confidence_tier or item.confidence or group.confidence_tier) == "tier1",
                 rationale = item.rationale or group.rationale,
                 hint = group.hint,
                 alternatives = alternatives,
@@ -75,6 +146,8 @@ function Ontology.AddGroup(groupID, group)
             })
         end
     end
+
+    return true
 end
 
 function Ontology.GetEntry(itemID)

@@ -15,6 +15,18 @@ function Util.CopyList(values)
     return copy
 end
 
+function Util.CopyTable(value)
+    local copy = {}
+    if type(value) ~= "table" then
+        return copy
+    end
+
+    for key, item in pairs(value) do
+        copy[key] = item
+    end
+    return copy
+end
+
 function Util.ItemIDFromLink(itemLink)
     if type(itemLink) ~= "string" then
         return nil
