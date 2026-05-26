@@ -10,6 +10,13 @@ Auction House Sense starts as a fully client-side World of Warcraft addon.
 - No full Auction House scan behavior
 - No automated buy, sell, undercut, mailbox, or inventory workflows
 
+## Local Research Data
+
+The shipped addon remains client-side and static, but development can use a
+local generated Battle.net item database for ontology research. Future sessions
+should check `docs/research-data.md` before adding curated data under
+`AhSense/Data`.
+
 ## Future Module Areas
 
 - Core addon lifecycle and configuration

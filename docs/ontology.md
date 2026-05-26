@@ -8,6 +8,20 @@ Ontology quality is the core product quality.
 - Consumable families
 - Profession tool equivalence
 
+## Expansion Priority
+
+Current ontology work is Midnight-first. Earlier expansion items may appear when
+they are inexpensive side effects of broad data pulls, but they should not get
+dedicated implementation effort unless they are still relevant to modern
+Auction House behavior.
+
+Generated Battle.net API research data belongs under `research/item-db` and must
+remain separate from the shipped addon ontology until a group is curated,
+explainable, and assigned a confidence tier.
+
+Use `docs/research-data.md` as the entry point for the current local item
+database, schema notes, refresh command, and starter queries.
+
 ## Confidence Tiers
 
 Tier 1 recommendations are high-confidence and eligible for passive hints.

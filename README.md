@@ -34,10 +34,16 @@ Out of scope for the initial product:
 - `AhSense/Integrations/` - future optional compatibility layers
 - `docs/` - design notes for architecture, ontology, and releases
 - `docs/spec.md` - product specification
+- `docs/research-data.md` - local Battle.net item database hook for ontology work
 
 ## Development Notes
 
 The project should stay fully client-side until there is a clear reason to add external services. Recommendations must be explainable, conservative, and advisory.
+
+Ontology research is Midnight-first. Local Battle.net item pulls can be stored
+under `research/item-db` with `tools/bnet_item_import.py`; generated databases
+and raw payloads are intentionally ignored by git. See `docs/research-data.md`
+before adding or expanding ontology groups.
 
 ## License
 

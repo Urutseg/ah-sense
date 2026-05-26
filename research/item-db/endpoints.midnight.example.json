@@ -1,0 +1,37 @@
+{
+  "database": "midnight-items.sqlite",
+  "jsonl": "midnight-items.raw.jsonl",
+  "expansion": "midnight",
+  "endpoints": [
+    {
+      "name": "midnight-consumables",
+      "path": "/data/wow/search/item",
+      "page_size": 1000,
+      "params": {
+        "orderby": "id",
+        "item_class.id": 0
+      },
+      "range": {
+        "field": "id",
+        "start": 240000,
+        "end": 280000,
+        "step": 1000
+      }
+    },
+    {
+      "name": "midnight-profession-equipment",
+      "path": "/data/wow/search/item",
+      "page_size": 1000,
+      "params": {
+        "orderby": "id",
+        "item_class.id": 19
+      },
+      "range": {
+        "field": "id",
+        "start": 240000,
+        "end": 280000,
+        "step": 1000
+      }
+    }
+  ]
+}
