@@ -5,11 +5,9 @@ local Ontology = {
     groups = {},
     confidence = {
         tier1 = {
-            passiveHintEligible = true,
             label = "High confidence",
         },
         tier2 = {
-            passiveHintEligible = false,
             label = "Medium confidence",
         },
     },
@@ -20,7 +18,9 @@ ns.Ontology = Ontology
 local function NormalizeEntry(itemID, entry)
     entry.itemID = itemID
     entry.alternatives = entry.alternatives or {}
-    entry.confidence = entry.confidence or "tier1"
+    entry.confidence_tier = entry.confidence_tier or entry.confidence or "tier1"
+    entry.confidence = entry.confidence_tier
+    entry.passive_eligible = entry.passive_eligible == true
     entry.rationale = entry.rationale or "Evidence-backed alternative"
     return entry
 end
@@ -39,7 +39,9 @@ function Ontology.AddGroup(groupID, group)
     end
 
     group.id = groupID
-    group.confidence = group.confidence or "tier1"
+    group.confidence_tier = group.confidence_tier or group.confidence or "tier1"
+    group.confidence = group.confidence_tier
+    group.passive_eligible = group.passive_eligible == true
     group.rationale = group.rationale or "Comparable utility"
     group.items = group.items or {}
     Ontology.groups[groupID] = group
@@ -54,7 +56,8 @@ function Ontology.AddGroup(groupID, group)
                         itemID = other.itemID,
                         name = other.name,
                         rationale = other.rationale or group.rationale,
-                        confidence = other.confidence or group.confidence,
+                        confidence_tier = other.confidence_tier or other.confidence or group.confidence_tier,
+                        passive_eligible = other.passive_eligible == true or group.passive_eligible == true,
                         groupID = groupID,
                     })
                 end
@@ -63,7 +66,8 @@ function Ontology.AddGroup(groupID, group)
             Ontology.AddEntry(itemID, {
                 name = item.name,
                 category = group.category,
-                confidence = item.confidence or group.confidence,
+                confidence_tier = item.confidence_tier or item.confidence or group.confidence_tier,
+                passive_eligible = item.passive_eligible == true or group.passive_eligible == true,
                 rationale = item.rationale or group.rationale,
                 hint = group.hint,
                 alternatives = alternatives,
@@ -91,6 +95,5 @@ function Ontology.IsPassiveEligible(entryOrAlternative)
         return false
     end
 
-    local confidence = Ontology.confidence[entryOrAlternative.confidence]
-    return confidence and confidence.passiveHintEligible == true
+    return entryOrAlternative.confidence_tier == "tier1" and entryOrAlternative.passive_eligible == true
 end

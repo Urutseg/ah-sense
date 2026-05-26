@@ -14,11 +14,18 @@ This order keeps runtime foundations ahead of data, data ahead of live Auction H
 
 ## Validation Notes
 
-- Passive hints are gated to Tier 1 ontology entries only.
-- Auction House calls are targeted to known alternatives and limited by cooldown plus maximum item count.
+- Passive hints are gated to Tier 1 ontology entries with explicit `passive_eligible = true`.
+- Midnight consumable and profession-equipment groups are curated from the local item DB, but remain active-mode only until fixed-cost or vendor evidence supports passive hints.
+- Auction House calls are targeted to the current item plus known alternatives and limited by cooldown plus maximum item count.
 - No full-market scan, external sync, automation, buy, sell, or undercut workflow is introduced.
 - Tooltip hints are one line and only appear while the Auction House frame is visible.
 - The comparison panel opens only from an explicit slash command or direct addon API call.
+
+## Current Curated Seeds
+
+- Vendor mappings: `Crystal Vial`, `Enchanting Vellum`; passive eligible because these are manually reviewed vendor-sold supplies.
+- Consumable families: `Silvermoon Health Potion`, `Lightfused Mana Potion`; active only, same Midnight item across item-level variants.
+- Profession tools: Herbalism epic headwear; active only, same Midnight profession-equipment role by manual name review.
 
 ## Follow-up Runtime Checks
 

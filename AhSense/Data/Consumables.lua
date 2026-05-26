@@ -1,43 +1,37 @@
 local _, ns = ...
 
-ns.Ontology.AddGroup("algari-healing-potions", {
+ns.Ontology.AddGroup("midnight-silvermoon-health-potions", {
     category = "consumable_family",
-    confidence = "tier1",
-    rationale = "Same healing potion across quality ranks",
+    confidence_tier = "tier1",
+    passive_eligible = false,
+    rationale = "Same Midnight potion across item-level variants",
     hint = "Comparable consumables available",
     items = {
         {
-            itemID = 211878,
-            name = "Algari Healing Potion",
+            itemID = 241304,
+            name = "Silvermoon Health Potion",
         },
         {
-            itemID = 211879,
-            name = "Algari Healing Potion",
-        },
-        {
-            itemID = 211880,
-            name = "Algari Healing Potion",
+            itemID = 241305,
+            name = "Silvermoon Health Potion",
         },
     },
 })
 
-ns.Ontology.AddGroup("bountiful-phials", {
+ns.Ontology.AddGroup("midnight-lightfused-mana-potions", {
     category = "consumable_family",
-    confidence = "tier1",
-    rationale = "Same phial family and utility profile",
-    hint = "Comparable phials available",
+    confidence_tier = "tier1",
+    passive_eligible = false,
+    rationale = "Same Midnight mana potion across item-level variants",
+    hint = "Comparable consumables available",
     items = {
         {
-            itemID = 212314,
-            name = "Phial of Bountiful Seasons",
+            itemID = 241300,
+            name = "Lightfused Mana Potion",
         },
         {
-            itemID = 212315,
-            name = "Phial of Bountiful Seasons",
-        },
-        {
-            itemID = 212316,
-            name = "Phial of Bountiful Seasons",
+            itemID = 241301,
+            name = "Lightfused Mana Potion",
         },
     },
 })

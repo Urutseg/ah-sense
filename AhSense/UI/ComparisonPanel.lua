@@ -6,6 +6,14 @@ ns.ComparisonPanel = ComparisonPanel
 local frame
 local rows = {}
 
+local function ClearRows()
+    for _, row in ipairs(rows) do
+        for _, cell in ipairs(row) do
+            cell:SetText("")
+        end
+    end
+end
+
 local function CreatePanel()
     if frame then
         return frame
@@ -82,11 +90,7 @@ function ComparisonPanel.ShowForItemID(itemID)
     local panel = CreatePanel()
     ComparisonPanel.currentItemID = itemID
 
-    for _, row in ipairs(rows) do
-        for _, cell in ipairs(row) do
-            cell:SetText("")
-        end
-    end
+    ClearRows()
 
     if not recommendation then
         panel.status:SetText("No reliable alternatives found.")
@@ -106,6 +110,27 @@ function ComparisonPanel.ShowForItemID(itemID)
 
     panel.status:SetText(requested and "Targeted Auction House query requested." or (message or "Using curated evidence."))
     panel:Show()
+end
+
+function ComparisonPanel.Refresh()
+    if not frame or not frame:IsShown() or not ComparisonPanel.currentItemID then
+        return
+    end
+
+    local recommendation = ns.Recommendations.GetForItem(ComparisonPanel.currentItemID)
+    if not recommendation then
+        return
+    end
+
+    ClearRows()
+    for index, alternative in ipairs(recommendation.alternatives) do
+        if index > #rows then
+            break
+        end
+        SetRow(index, alternative)
+    end
+
+    frame.status:SetText("Prices updated from targeted Auction House results.")
 end
 
 local module = {}
