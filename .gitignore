@@ -29,3 +29,5 @@ __pycache__/
 research/item-db/*.sqlite
 research/item-db/*.sqlite-*
 research/item-db/*.jsonl
+
+AGENTS.md
