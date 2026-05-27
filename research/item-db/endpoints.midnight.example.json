@@ -28,7 +28,7 @@
       },
       "range": {
         "field": "id",
-        "start": 240000,
+        "start": 236000,
         "end": 280000,
         "step": 1000
       }
@@ -43,7 +43,7 @@
       },
       "range": {
         "field": "id",
-        "start": 240000,
+        "start": 236000,
         "end": 280000,
         "step": 1000
       }

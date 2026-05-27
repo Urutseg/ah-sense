@@ -13,11 +13,12 @@ tracked by git, but they may exist in this workspace for future chat sessions.
 - Profession importer: `tools/bnet_profession_import.py`
 - Ontology review tool: `tools/ontology_review.py`
 - Focus: Midnight-first item candidates from Battle.net Game Data APIs
-- Last known import shape after adding Tradeskill coverage: 1,903 normalized
-  item rows, 316 Tradeskill rows, and 222 item rows with modified-crafting
-  category IDs. The cache includes the original `240000-280000` Consumable and
-  Profession slices, a `236000-280000` Tradeskill slice, plus exact item matches
-  for recipe-used modified-crafting categories outside those ranges.
+- Last known import shape after lowering all Midnight item-class slices to
+  `236000`: 1,954 normalized item rows, 341 Tradeskill rows, 116 Profession
+  equipment rows, and 234 item rows with modified-crafting category IDs. The
+  cache includes `236000-280000` Consumable, Profession equipment, and
+  Tradeskill slices, plus exact item matches for recipe-used modified-crafting
+  categories outside those ranges.
 
 Treat this database as research input only. Do not ship generated rows directly
 in the addon. Curate explainable, confidence-tiered groups into `AhSense/Data`
@@ -92,8 +93,12 @@ Observed limitations:
   recipes through `recipe_modified_crafting_slots` and
   `modified_crafting_slot_type_categories`.
 - Do not assume a Midnight item ID starts at `240000`. Several current
-  profession materials used by Midnight recipes live in `236000-239999`, and
-  some recipe-compatible herb categories reuse legacy item IDs. Use the
+  profession materials and profession equipment items used by Midnight recipes
+  live in `236000-239999`, and some recipe-compatible herb categories reuse
+  legacy item IDs. For example, `Thalassian Blacksmith's Hammer` (`238013`)
+  and `Sun-Blessed Blacksmith's Hammer` (`238018`) were missing when the
+  Profession equipment slice started at `240000`. Keep the Consumable,
+  Profession equipment, and Tradeskill slices at `236000-280000`, and use the
   modified-crafting category-item resolver before concluding a category has no
   item row.
 - Bind-on-pickup items are not useful for AhSense ontology groups because they
@@ -186,6 +191,13 @@ Quick schema check:
 
 ```powershell
 python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute('pragma table_info(items)')]"
+```
+
+Check for the sub-`240000` Midnight profession-equipment rows that caught a
+previous import gap:
+
+```powershell
+python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute('select item_id,name,quality_type,inventory_type_name,required_profession_name,stat_signature,equip_use_text from items where item_class_id=19 and item_id between 236000 and 239999 order by item_id')]"
 ```
 
 Recipe reagents with direct vendor text:

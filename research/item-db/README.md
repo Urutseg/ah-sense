@@ -33,5 +33,12 @@ Large search endpoints should use `range` slicing. The Battle.net search API can
 cap broad result sets, so the Midnight manifest narrows by item ID range and
 then fetches pages in parallel within each slice.
 
+Do not raise the Midnight lower bound back to `240000`. Current Midnight data
+has relevant rows in `236000-239999`, including profession equipment such as
+`238013` `Thalassian Blacksmith's Hammer` and `238018` `Sun-Blessed
+Blacksmith's Hammer`. Keep the Consumable, Profession equipment, and Tradeskill
+slices at `236000-280000` unless a newer import explicitly proves a safer
+boundary.
+
 The current Battle.net API calls succeed with `Authorization: Bearer ...`; the
 importer defaults to header auth and stores redacted URLs in the import log.
