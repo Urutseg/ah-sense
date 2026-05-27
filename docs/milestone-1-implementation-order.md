@@ -23,9 +23,9 @@ This order keeps runtime foundations ahead of data, data ahead of live Auction H
 
 ## Current Curated Seeds
 
-- Vendor mappings: `Crystal Vial`, `Enchanting Vellum`; passive eligible because these are manually reviewed vendor-sold supplies.
-- Consumable families: reviewed Midnight potion, flask, and phial item-level variants; active only.
-- Profession tools: no current shipped groups. Generated exact-match candidates were removed because they are bind-on-pickup and cannot appear on the Auction House.
+- Vendor mappings: evergreen `Crystal Vial` and `Enchanting Vellum`, plus a reviewed Midnight profession reagent pool from normal recipe reagents and modified-crafting category items in `research/ontology-review/vendor-reagent-candidates.md`; passive eligible because these have explicit vendor-supply evidence.
+- Consumable families: reviewed Midnight potion, flask, and phial rank variants plus active-only Well Fed food-profile groups from `outputs/midnight-consumable-equivalents/midnight_consumable_equivalents.xlsx`; active only because magnitude, serving type, and restore caveats can matter.
+- Profession tools: active-only Midnight profession-equipment groups by profession and exact equipment role from `research/ontology-review/profession-equipment-equivalent-candidates.md`; two accessory slots are split into separate groups instead of treated as interchangeable. No passive hints because skill values, quality, and secondary profession stats can differ. Bind-on-acquire, placeholder, and unverified common-rod rows remain excluded.
 
 ## Follow-up Runtime Checks
 

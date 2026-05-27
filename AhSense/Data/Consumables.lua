@@ -4,7 +4,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-flask-of-thalassian-resistance-
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Flask of Thalassian Resistance effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -22,7 +22,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-flask-of-the-blood-knights-faf4
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Flask of the Blood Knights effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -40,7 +40,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-flask-of-the-magisters-bf2322a2
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Flask of the Magisters effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -58,7 +58,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-flask-of-the-shattered-sun-789d
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Flask of the Shattered Sun effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -76,7 +76,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-haranir-phial-of-finesse-243c05
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Haranir Phial of Finesse effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -94,7 +94,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-haranir-phial-of-ingenuity-c951
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Haranir Phial of Ingenuity effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -112,7 +112,7 @@ ns.Ontology.AddGroup("midnight-flasks-and-phials-haranir-phial-of-perception-8a7
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Haranir Phial of Perception effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -130,7 +130,7 @@ ns.Ontology.AddGroup("midnight-potions-amani-extract-1fc3b328", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Amani Extract effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -148,7 +148,7 @@ ns.Ontology.AddGroup("midnight-potions-draught-of-rampant-abandon-6c6214ba", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Draught of Rampant Abandon effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -166,7 +166,7 @@ ns.Ontology.AddGroup("midnight-potions-enlightenment-tonic-98addd98", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Enlightenment Tonic effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -184,7 +184,7 @@ ns.Ontology.AddGroup("midnight-potions-entropic-extract-bdc40d66", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Entropic Extract effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -202,7 +202,7 @@ ns.Ontology.AddGroup("midnight-potions-invigorating-healing-potion-365a130d", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Invigorating Healing Potion effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -224,7 +224,7 @@ ns.Ontology.AddGroup("midnight-potions-light-s-potential-a454bfb8", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Light's Potential effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -242,7 +242,7 @@ ns.Ontology.AddGroup("midnight-potions-light-s-preservation-2dd0e684", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Light's Preservation effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -260,7 +260,7 @@ ns.Ontology.AddGroup("midnight-potions-lightfused-mana-potion-d820c900", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Lightfused Mana Potion effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -278,7 +278,7 @@ ns.Ontology.AddGroup("midnight-potions-potion-of-devoured-dreams-73112ef5", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Potion of Devoured Dreams effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -296,7 +296,7 @@ ns.Ontology.AddGroup("midnight-potions-potion-of-recklessness-3a9282c6", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Potion of Recklessness effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -314,7 +314,7 @@ ns.Ontology.AddGroup("midnight-potions-potion-of-zealotry-63a760ac", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Potion of Zealotry effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -332,7 +332,7 @@ ns.Ontology.AddGroup("midnight-potions-refreshing-serum-f1b2a062", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Refreshing Serum effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -350,7 +350,7 @@ ns.Ontology.AddGroup("midnight-potions-silvermoon-health-potion-21924976", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Silvermoon Health Potion effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -368,7 +368,7 @@ ns.Ontology.AddGroup("midnight-potions-umbral-essentia-e914fa4b", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Umbral Essentia effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -390,7 +390,7 @@ ns.Ontology.AddGroup("midnight-potions-void-shrouded-tincture-b069c17f", {
     category = "consumable_family",
     confidence_tier = "tier1",
     passive_eligible = false,
-    rationale = "Same Void-Shrouded Tincture effect across item-level variants",
+    rationale = "Same named consumable mechanic across item-level variants; magnitude differs",
     hint = "Comparable consumables available",
     items = {
         {
@@ -400,6 +400,201 @@ ns.Ontology.AddGroup("midnight-potions-void-shrouded-tincture-b069c17f", {
         {
             itemID = 241303,
             name = "Void-Shrouded Tincture",
+        },
+    },
+})
+
+-- Food groups are active-only Tier 2: they share the same Well Fed stat
+-- profile and magnitude, but serving type and restore text can still matter.
+
+ns.Ontology.AddGroup("midnight-food-critical-strike-59", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed Critical Strike profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242287,
+            name = "Arcano Cutlets",
+        },
+        {
+            itemID = 242283,
+            name = "Sun-Seared Lumifin",
+        },
+        {
+            itemID = 242278,
+            name = "Tasty Smoked Tetra",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-haste-59", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed Haste profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242277,
+            name = "Crimson Calamari",
+        },
+        {
+            itemID = 242286,
+            name = "Fel-Kissed Filet",
+        },
+        {
+            itemID = 242282,
+            name = "Null and Void Plate",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-highest-secondary-stat-65", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed highest-secondary-stat profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242274,
+            name = "Champion's Bento",
+        },
+        {
+            itemID = 255848,
+            name = "Flora Frenzy",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-mastery-59", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed Mastery profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242281,
+            name = "Glitter Skewers",
+        },
+        {
+            itemID = 242285,
+            name = "Warped Wise Wings",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-primary-stat-25", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed primary-stat profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242302,
+            name = "Bloom Skewers",
+        },
+        {
+            itemID = 242303,
+            name = "Mana-Infused Stew",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-primary-stat-35", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed primary-stat profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242289,
+            name = "Spellfire Filet",
+        },
+        {
+            itemID = 242288,
+            name = "Twilight Angler's Medley",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-primary-stat-50", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed primary-stat profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 255847,
+            name = "Impossibly Royal Roast",
+        },
+        {
+            itemID = 242275,
+            name = "Royal Roast",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-stamina-highest-secondary-stat-98", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed Stamina and highest-secondary-stat profile and magnitude; serving type may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242273,
+            name = "Blooming Feast",
+        },
+        {
+            itemID = 242272,
+            name = "Quel'dorei Medley",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-stamina-primary-stat-98", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed Stamina and primary-stat profile and magnitude; serving type may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 255846,
+            name = "Harandar Celebration",
+        },
+        {
+            itemID = 255845,
+            name = "Silvermoon Parade",
+        },
+    },
+})
+
+ns.Ontology.AddGroup("midnight-food-versatility-59", {
+    category = "consumable_family",
+    confidence_tier = "tier2",
+    passive_eligible = false,
+    rationale = "Same Well Fed Versatility profile and magnitude; food restore text may differ",
+    hint = "Comparable consumables available",
+    items = {
+        {
+            itemID = 242276,
+            name = "Braised Blood Hunter",
+        },
+        {
+            itemID = 242280,
+            name = "Buttered Root Crab",
+        },
+        {
+            itemID = 242284,
+            name = "Void-Kissed Fish Rolls",
         },
     },
 })
