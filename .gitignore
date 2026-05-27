@@ -33,3 +33,4 @@ research/item-db/*.jsonl
 research/ontology-review/
 
 AGENTS.md
+outputs/
