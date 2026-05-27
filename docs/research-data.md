@@ -10,6 +10,7 @@ tracked by git, but they may exist in this workspace for future chat sessions.
 - Raw API payload archive: `research/item-db/midnight-research.raw.jsonl`
 - Endpoint manifest: `research/item-db/endpoints.midnight.example.json`
 - Importer: `tools/bnet_item_import.py`
+- Profession importer: `tools/bnet_profession_import.py`
 - Ontology review tool: `tools/ontology_review.py`
 - Focus: Midnight-first item candidates from Battle.net Game Data APIs
 - Last known import shape: 1,428 normalized item rows from item IDs
@@ -36,6 +37,17 @@ Useful normalized tables:
   Ingenuity, Multicraft, Resourcefulness, and Crafting Speed
 - `item_spells` - spell IDs, spell names, and readable item-provided spell text
   such as `Equip: +18 Midnight Blacksmithing Skill`
+- `professions` - profession index/detail rows from the official Profession API
+- `profession_skill_tiers` - imported Midnight profession skill-tier payloads
+- `profession_recipe_categories` - recipe category names within skill tiers
+- `recipes` - official recipe detail payloads, including descriptions and any
+  crafted item reference exposed by the API
+- `recipe_reagents` - recipe reagent item IDs, names, and quantities; useful for
+  proving that an item is used as a reagent before considering vendor ontology
+- `recipe_modified_crafting_slots` - recipe optional/reagent slot references
+- `modified_crafting_categories`, `modified_crafting_slot_types`, and
+  `modified_crafting_slot_type_categories` - official Modified Crafting API
+  metadata and compatible category relationships
 
 Observed useful Battle.net detail fields:
 
@@ -46,6 +58,9 @@ Observed useful Battle.net detail fields:
 - `preview_item.limit_category`
 - `preview_item.bonus_list`
 - item or preview `description`
+- recipe `reagents`
+- recipe `modified_crafting_slots`
+- modified-crafting slot type `compatible_categories`
 
 Observed limitations:
 
@@ -55,9 +70,13 @@ Observed limitations:
   text and keep `item_details.raw_json` for audit.
 - Broad tooltip rendering is not exposed as complete tooltip lines. The closest
   official source is `preview_item` plus item `description`.
-- Vendor source or vendor NPC references were not observed in the item payloads.
-  `purchase_price` is useful evidence, but it is not sufficient by itself to
-  prove vendor availability for passive hints.
+- Vendor NPC references were not observed in item payloads. Some reagent item
+  descriptions do explicitly say `Sold by vendors`, `Sold by <profession>
+  vendors`, or `Can be purchased from vendors`; this is stronger evidence than
+  `purchase_price` alone and should be combined with `recipe_reagents` before
+  creating vendor-reagent review candidates. Descriptions that mention other
+  currencies, account binding, or bind-on-acquire sources are not passive
+  vendor-trap candidates.
 - Bind-on-pickup items are not useful for AhSense ontology groups because they
   cannot appear on the Auction House.
 - Fleeting potion and flask variants are temporary cauldron-created items, so
@@ -100,6 +119,17 @@ To rebuild and enrich in one pass:
 python tools\bnet_item_import.py --endpoints research\item-db\endpoints.midnight.example.json --database research\item-db\midnight-research.sqlite --jsonl research\item-db\midnight-research.raw.jsonl --enrich-details --max-workers 16
 ```
 
+To add official Profession API, Recipe API, and Modified Crafting API data for
+Midnight skill tiers:
+
+```powershell
+python tools\bnet_profession_import.py --database research\item-db\midnight-research.sqlite --jsonl research\item-db\midnight-professions.raw.jsonl --max-workers 16
+```
+
+This stores ignored research-only rows in the same SQLite database and enriches
+recipe reagent item details so vendor-reagent candidates can be queried without
+shipping generated data.
+
 ## Useful Queries
 
 Modern profession equipment candidates:
@@ -137,6 +167,12 @@ Quick schema check:
 
 ```powershell
 python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute('pragma table_info(items)')]"
+```
+
+Recipe reagents with direct vendor text:
+
+```powershell
+python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute(\"select rr.reagent_item_id,i.name,i.purchase_price,i.description,count(distinct rr.recipe_id) from recipe_reagents rr join items i on i.item_id=rr.reagent_item_id where (i.description like '%Sold by%vendors%' or i.description like '%Can be purchased from vendors%') and (i.binding_type is null or i.binding_type != 'ON_ACQUIRE') group by rr.reagent_item_id order by count(distinct rr.recipe_id) desc\")]"
 ```
 
 ## Curation Rule
