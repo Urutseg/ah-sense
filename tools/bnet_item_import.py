@@ -197,6 +197,10 @@ def init_db(path: Path) -> sqlite3.Connection:
             required_profession_display TEXT,
             modified_crafting_stat_type TEXT,
             modified_crafting_stat_name TEXT,
+            modified_crafting_id INTEGER,
+            modified_crafting_category_id INTEGER,
+            modified_crafting_category_name TEXT,
+            is_crafting_reagent INTEGER,
             expansion TEXT,
             source_endpoint TEXT,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -271,6 +275,10 @@ def init_db(path: Path) -> sqlite3.Connection:
     ensure_column(conn, "items", "required_profession_display", "TEXT")
     ensure_column(conn, "items", "modified_crafting_stat_type", "TEXT")
     ensure_column(conn, "items", "modified_crafting_stat_name", "TEXT")
+    ensure_column(conn, "items", "modified_crafting_id", "INTEGER")
+    ensure_column(conn, "items", "modified_crafting_category_id", "INTEGER")
+    ensure_column(conn, "items", "modified_crafting_category_name", "TEXT")
+    ensure_column(conn, "items", "is_crafting_reagent", "INTEGER")
     return conn
 
 
@@ -340,6 +348,10 @@ def normalize_item(result: dict[str, Any], locale: str) -> dict[str, Any] | None
         quality_type = quality.get("type") or quality.get("name")
     else:
         quality_type = None
+    modified_crafting = data.get("modified_crafting")
+    modified_crafting = modified_crafting if isinstance(modified_crafting, dict) else {}
+    modified_category = modified_crafting.get("category")
+    modified_category = modified_category if isinstance(modified_category, dict) else {}
 
     return {
         "item_id": item_id,
@@ -357,6 +369,11 @@ def normalize_item(result: dict[str, Any], locale: str) -> dict[str, Any] | None
         "sell_price": optional_int(data.get("sell_price")),
         "is_stackable": bool_int(data.get("is_stackable")),
         "is_equippable": bool_int(data.get("is_equippable")),
+        "modified_crafting_id": optional_int(modified_crafting.get("id")),
+        "modified_crafting_category_id": optional_int(modified_category.get("id")),
+        "modified_crafting_category_name": localized_name(
+            modified_category.get("name"), locale
+        ),
         "raw_json": json.dumps(data, ensure_ascii=False, sort_keys=True),
     }
 
@@ -438,6 +455,10 @@ def normalize_detail(data: dict[str, Any]) -> dict[str, Any]:
     binding = binding if isinstance(binding, dict) else {}
     modified = preview.get("modified_crafting_stat")
     modified = modified if isinstance(modified, dict) else {}
+    modified_crafting = data.get("modified_crafting")
+    modified_crafting = modified_crafting if isinstance(modified_crafting, dict) else {}
+    modified_category = modified_crafting.get("category")
+    modified_category = modified_category if isinstance(modified_category, dict) else {}
     stats = normalize_stats(preview)
     spells = normalize_spells(preview)
 
@@ -466,6 +487,12 @@ def normalize_detail(data: dict[str, Any]) -> dict[str, Any]:
         "required_profession_display": optional_text(skill.get("display_string")),
         "modified_crafting_stat_type": optional_text(modified.get("type")),
         "modified_crafting_stat_name": optional_text(modified.get("name")),
+        "modified_crafting_id": optional_int(modified_crafting.get("id")),
+        "modified_crafting_category_id": optional_int(modified_category.get("id")),
+        "modified_crafting_category_name": optional_text(modified_category.get("name")),
+        "is_crafting_reagent": 1
+        if isinstance(preview.get("crafting_reagent"), str)
+        else None,
         "stats": stats,
         "spells": spells,
     }
@@ -498,9 +525,10 @@ def upsert_items(
                 item_id, name, item_class_id, item_class_name, item_subclass_id,
                 item_subclass_name, inventory_type_id, inventory_type_name,
                 quality_type, level, required_level, purchase_price, sell_price,
-                is_stackable, is_equippable, expansion, source_endpoint, updated_at,
-                raw_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+                is_stackable, is_equippable, modified_crafting_id,
+                modified_crafting_category_id, modified_crafting_category_name,
+                expansion, source_endpoint, updated_at, raw_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
             ON CONFLICT(item_id) DO UPDATE SET
                 name = excluded.name,
                 item_class_id = excluded.item_class_id,
@@ -516,6 +544,9 @@ def upsert_items(
                 sell_price = excluded.sell_price,
                 is_stackable = excluded.is_stackable,
                 is_equippable = excluded.is_equippable,
+                modified_crafting_id = excluded.modified_crafting_id,
+                modified_crafting_category_id = excluded.modified_crafting_category_id,
+                modified_crafting_category_name = excluded.modified_crafting_category_name,
                 expansion = excluded.expansion,
                 source_endpoint = excluded.source_endpoint,
                 updated_at = CURRENT_TIMESTAMP,
@@ -537,6 +568,9 @@ def upsert_items(
                 item["sell_price"],
                 item["is_stackable"],
                 item["is_equippable"],
+                item["modified_crafting_id"],
+                item["modified_crafting_category_id"],
+                item["modified_crafting_category_name"],
                 expansion,
                 endpoint_name,
                 item["raw_json"],
@@ -582,6 +616,10 @@ def upsert_item_detail(
             required_profession_display = ?,
             modified_crafting_stat_type = ?,
             modified_crafting_stat_name = ?,
+            modified_crafting_id = ?,
+            modified_crafting_category_id = ?,
+            modified_crafting_category_name = ?,
+            is_crafting_reagent = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE item_id = ?
         """,
@@ -600,6 +638,10 @@ def upsert_item_detail(
             detail["required_profession_display"],
             detail["modified_crafting_stat_type"],
             detail["modified_crafting_stat_name"],
+            detail["modified_crafting_id"],
+            detail["modified_crafting_category_id"],
+            detail["modified_crafting_category_name"],
+            detail["is_crafting_reagent"],
             item_id,
         ),
     )

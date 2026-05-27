@@ -13,8 +13,11 @@ tracked by git, but they may exist in this workspace for future chat sessions.
 - Profession importer: `tools/bnet_profession_import.py`
 - Ontology review tool: `tools/ontology_review.py`
 - Focus: Midnight-first item candidates from Battle.net Game Data APIs
-- Last known import shape: 1,428 normalized item rows from item IDs
-  `240000-280000`, with 1,428 enriched per-item detail payloads
+- Last known import shape after adding Tradeskill coverage: 1,903 normalized
+  item rows, 316 Tradeskill rows, and 222 item rows with modified-crafting
+  category IDs. The cache includes the original `240000-280000` Consumable and
+  Profession slices, a `236000-280000` Tradeskill slice, plus exact item matches
+  for recipe-used modified-crafting categories outside those ranges.
 
 Treat this database as research input only. Do not ship generated rows directly
 in the addon. Curate explainable, confidence-tiered groups into `AhSense/Data`
@@ -31,7 +34,8 @@ Useful normalized tables:
 - `items` - one row per item, including class/subclass, inventory type, quality,
   item level, required level, price fields, binding, description,
   `limit_category`, `stat_signature`, `spell_ids_json`, `equip_use_text`,
-  required profession fields, and preserved search `raw_json`
+  required profession fields, structured modified-crafting category fields, and
+  preserved search `raw_json`
 - `item_details` - one raw per-item detail payload per item for auditability
 - `item_stats` - one row per preview stat, including profession stats such as
   Ingenuity, Multicraft, Resourcefulness, and Crafting Speed
@@ -48,6 +52,9 @@ Useful normalized tables:
 - `modified_crafting_categories`, `modified_crafting_slot_types`, and
   `modified_crafting_slot_type_categories` - official Modified Crafting API
   metadata and compatible category relationships
+- `modified_crafting_category_item_candidates` - exact item-name matches for
+  recipe-used modified-crafting categories that were not already represented by
+  `items.modified_crafting_category_id`
 
 Observed useful Battle.net detail fields:
 
@@ -61,6 +68,8 @@ Observed useful Battle.net detail fields:
 - recipe `reagents`
 - recipe `modified_crafting_slots`
 - modified-crafting slot type `compatible_categories`
+- item `modified_crafting.category`
+- `preview_item.crafting_reagent`
 
 Observed limitations:
 
@@ -73,10 +82,20 @@ Observed limitations:
 - Vendor NPC references were not observed in item payloads. Some reagent item
   descriptions do explicitly say `Sold by vendors`, `Sold by <profession>
   vendors`, or `Can be purchased from vendors`; this is stronger evidence than
-  `purchase_price` alone and should be combined with `recipe_reagents` before
-  creating vendor-reagent review candidates. Descriptions that mention other
-  currencies, account binding, or bind-on-acquire sources are not passive
-  vendor-trap candidates.
+  `purchase_price` alone. Combine that description evidence with either
+  `recipe_reagents` or modified-crafting category usage before creating
+  vendor-reagent review candidates. Descriptions that mention other currencies,
+  account binding, or bind-on-acquire sources are not passive vendor-trap
+  candidates.
+- Some recipe-used reagents do not appear in `recipe_reagents`. For example,
+  `Sunglass Vial` is an item-backed modified-crafting category used by Alchemy
+  recipes through `recipe_modified_crafting_slots` and
+  `modified_crafting_slot_type_categories`.
+- Do not assume a Midnight item ID starts at `240000`. Several current
+  profession materials used by Midnight recipes live in `236000-239999`, and
+  some recipe-compatible herb categories reuse legacy item IDs. Use the
+  modified-crafting category-item resolver before concluding a category has no
+  item row.
 - Bind-on-pickup items are not useful for AhSense ontology groups because they
   cannot appear on the Auction House.
 - Fleeting potion and flask variants are temporary cauldron-created items, so
@@ -119,16 +138,16 @@ To rebuild and enrich in one pass:
 python tools\bnet_item_import.py --endpoints research\item-db\endpoints.midnight.example.json --database research\item-db\midnight-research.sqlite --jsonl research\item-db\midnight-research.raw.jsonl --enrich-details --max-workers 16
 ```
 
-To add official Profession API, Recipe API, and Modified Crafting API data for
-Midnight skill tiers:
+To add official Profession API, Recipe API, Modified Crafting API data, and
+exact item matches for recipe-used modified-crafting categories:
 
 ```powershell
 python tools\bnet_profession_import.py --database research\item-db\midnight-research.sqlite --jsonl research\item-db\midnight-professions.raw.jsonl --max-workers 16
 ```
 
 This stores ignored research-only rows in the same SQLite database and enriches
-recipe reagent item details so vendor-reagent candidates can be queried without
-shipping generated data.
+recipe reagent and modified-crafting category item details so vendor-reagent
+candidates can be queried without shipping generated data.
 
 ## Useful Queries
 
@@ -173,6 +192,18 @@ Recipe reagents with direct vendor text:
 
 ```powershell
 python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute(\"select rr.reagent_item_id,i.name,i.purchase_price,i.description,count(distinct rr.recipe_id) from recipe_reagents rr join items i on i.item_id=rr.reagent_item_id where (i.description like '%Sold by%vendors%' or i.description like '%Can be purchased from vendors%') and (i.binding_type is null or i.binding_type != 'ON_ACQUIRE') group by rr.reagent_item_id order by count(distinct rr.recipe_id) desc\")]"
+```
+
+Modified-crafting categories that resolved to exact item candidates:
+
+```powershell
+python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute('select ci.category_id,c.name,ci.item_id,i.name,i.purchase_price,i.description from modified_crafting_category_item_candidates ci join modified_crafting_categories c on c.category_id=ci.category_id left join items i on i.item_id=ci.item_id order by ci.category_id,ci.item_id')]"
+```
+
+Remaining recipe-used modified-crafting categories without an exact item match:
+
+```powershell
+python -c "import sqlite3; con=sqlite3.connect('research/item-db/midnight-research.sqlite'); [print(row) for row in con.execute('select c.category_id,c.name,count(distinct r.recipe_id) from modified_crafting_categories c join modified_crafting_slot_type_categories stc on stc.category_id=c.category_id join recipe_modified_crafting_slots rms on rms.slot_type_id=stc.slot_type_id join recipes r on r.recipe_id=rms.recipe_id left join items i on i.modified_crafting_category_id=c.category_id left join modified_crafting_category_item_candidates ci on ci.category_id=c.category_id where i.item_id is null and ci.item_id is null group by c.category_id order by count(distinct r.recipe_id) desc')]"
 ```
 
 ## Curation Rule

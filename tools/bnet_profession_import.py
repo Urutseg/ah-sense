@@ -133,6 +133,17 @@ def ensure_profession_schema(conn: sqlite3.Connection) -> None:
             category_name TEXT,
             PRIMARY KEY (slot_type_id, category_id)
         );
+
+        CREATE TABLE IF NOT EXISTS modified_crafting_category_item_candidates (
+            category_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            item_name TEXT,
+            is_exact_name_match INTEGER,
+            source TEXT,
+            raw_json TEXT NOT NULL,
+            fetched_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (category_id, item_id)
+        );
         """
     )
 
@@ -156,6 +167,8 @@ def ref_id(value: dict[str, Any], key: str = "id") -> int | None:
 
 def ref_name(value: dict[str, Any], key: str = "name") -> str | None:
     candidate = value.get(key)
+    if isinstance(candidate, dict):
+        return candidate.get("en_US") or next(iter(candidate.values()), None)
     return candidate if isinstance(candidate, str) else None
 
 
@@ -446,6 +459,111 @@ def import_modified_crafting(
     return category_count, slot_count
 
 
+def upsert_category_item_candidate(
+    conn: sqlite3.Connection,
+    *,
+    category_id: int,
+    item: dict[str, Any],
+    is_exact_name_match: bool,
+    source: str,
+) -> int | None:
+    item_id = item.get("id")
+    if not isinstance(item_id, int):
+        return None
+    item_name = ref_name(item)
+    conn.execute(
+        """
+        INSERT INTO modified_crafting_category_item_candidates (
+            category_id, item_id, item_name, is_exact_name_match, source,
+            raw_json, fetched_at
+        ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(category_id, item_id) DO UPDATE SET
+            item_name = excluded.item_name,
+            is_exact_name_match = excluded.is_exact_name_match,
+            source = excluded.source,
+            raw_json = excluded.raw_json,
+            fetched_at = CURRENT_TIMESTAMP
+        """,
+        (
+            category_id,
+            item_id,
+            item_name,
+            1 if is_exact_name_match else 0,
+            source,
+            json.dumps(item, ensure_ascii=False, sort_keys=True),
+        ),
+    )
+    return item_id
+
+
+def search_category_item_candidates(
+    conn: sqlite3.Connection,
+    *,
+    api_base_url: str,
+    namespace: str,
+    locale: str,
+    token: str,
+    auth_mode: str,
+) -> set[int]:
+    categories = list(
+        conn.execute(
+            """
+            SELECT DISTINCT c.category_id, c.name
+            FROM modified_crafting_categories c
+            JOIN modified_crafting_slot_type_categories stc
+              ON stc.category_id = c.category_id
+            JOIN recipe_modified_crafting_slots rms
+              ON rms.slot_type_id = stc.slot_type_id
+            LEFT JOIN items i
+              ON i.modified_crafting_category_id = c.category_id
+            WHERE i.item_id IS NULL
+              AND c.name IS NOT NULL
+            ORDER BY c.category_id
+            """
+        )
+    )
+    item_ids: set[int] = set()
+    for category_id, category_name in categories:
+        # request_bnet intentionally covers canonical endpoints; build this
+        # search URL inline because name.en_US is not a standard endpoint param.
+        params = {
+            "namespace": namespace,
+            "locale": locale,
+            "orderby": "id",
+            "item_class.id": 7,
+            "name.en_US": category_name,
+        }
+        if auth_mode == "query":
+            params["access_token"] = token
+        search_url = f"{api_base_url.rstrip('/')}/data/wow/search/item?{urllib.parse.urlencode(params)}"
+        headers = {"Authorization": f"Bearer {token}"} if auth_mode == "header" else {}
+        payload = request_json(search_url, headers=headers)
+        exact_matches = []
+        for result in payload.get("results") or []:
+            if not isinstance(result, dict):
+                continue
+            item = result.get("data")
+            if not isinstance(item, dict):
+                continue
+            item_name = item.get("name")
+            if isinstance(item_name, dict):
+                item_name = item_name.get(locale) or item_name.get("en_US")
+            if isinstance(item_name, str) and item_name.lower() == category_name.lower():
+                exact_matches.append(item)
+        for item in exact_matches:
+            item_id = upsert_category_item_candidate(
+                conn,
+                category_id=category_id,
+                item=item,
+                is_exact_name_match=True,
+                source=redact_url(search_url),
+            )
+            if item_id is not None:
+                item_ids.add(item_id)
+    conn.commit()
+    return item_ids
+
+
 def import_professions(
     conn: sqlite3.Connection,
     *,
@@ -586,8 +704,10 @@ def ensure_reagent_items(
                         item_subclass_id, item_subclass_name, inventory_type_id,
                         inventory_type_name, quality_type, level, required_level,
                         purchase_price, sell_price, is_stackable, is_equippable,
-                        raw_json, expansion, source_endpoint, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        modified_crafting_id, modified_crafting_category_id,
+                        modified_crafting_category_name, raw_json, expansion,
+                        source_endpoint, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                     """,
                     (
                         item_id,
@@ -605,6 +725,9 @@ def ensure_reagent_items(
                         item["sell_price"] if item else None,
                         item["is_stackable"] if item else None,
                         item["is_equippable"] if item else None,
+                        item["modified_crafting_id"] if item else None,
+                        item["modified_crafting_category_id"] if item else None,
+                        item["modified_crafting_category_name"] if item else None,
                         item["raw_json"]
                         if item
                         else json.dumps(payload, ensure_ascii=False, sort_keys=True),
@@ -628,6 +751,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--append-jsonl", action="store_true")
     parser.add_argument("--skill-tier-pattern", default=MIDNIGHT_TIER_PATTERN)
     parser.add_argument("--skip-modified-crafting", action="store_true")
+    parser.add_argument("--skip-modified-crafting-item-search", action="store_true")
     parser.add_argument("--skip-reagent-item-details", action="store_true")
     parser.add_argument("--max-workers", type=int)
     return parser.parse_args()
@@ -687,8 +811,19 @@ def main() -> int:
         auth_mode=auth_mode,
         skill_tier_pattern=args.skill_tier_pattern,
     )
+    category_item_ids: set[int] = set()
+    if not args.skip_modified_crafting_item_search:
+        category_item_ids = search_category_item_candidates(
+            conn,
+            api_base_url=api_base_url,
+            namespace=namespace,
+            locale=locale,
+            token=token,
+            auth_mode=auth_mode,
+        )
     enriched_count = 0
     if not args.skip_reagent_item_details:
+        reagent_item_ids.update(category_item_ids)
         enriched_count = ensure_reagent_items(
             conn,
             reagent_item_ids,
@@ -708,6 +843,7 @@ def main() -> int:
     print(f"Imported modified crafting categories: {category_count}")
     print(f"Imported modified crafting slot types: {slot_count}")
     print(f"Reagent item IDs found: {len(reagent_item_ids)}")
+    print(f"Modified crafting category item candidates found: {len(category_item_ids)}")
     print(f"Reagent item details enriched: {enriched_count}")
     print(f"Database: {args.database}")
     print(f"Raw payloads: {args.jsonl}")
