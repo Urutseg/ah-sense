@@ -68,12 +68,19 @@ local function NormalizeAlternative(alternative, fallbackRationale)
     return normalized
 end
 
+local function CopyItemKeyFields(target, source)
+    if source.itemLevels then
+        target.itemLevels = ns.Util.CopyList(source.itemLevels)
+    end
+end
+
 local function NormalizeEntry(itemID, entry)
     entry.itemID = itemID
     entry.confidence_tier = ConfidenceTier(entry)
     entry.confidence = entry.confidence_tier
     entry.passive_eligible = entry.passive_eligible == true
     entry.alternatives = entry.alternatives or {}
+    CopyItemKeyFields(entry, entry)
 
     for index, alternative in ipairs(entry.alternatives) do
         entry.alternatives[index] = NormalizeAlternative(alternative, entry.rationale)
@@ -129,6 +136,7 @@ function Ontology.AddGroup(groupID, group)
                         passive_eligible = (other.passive_eligible == true or group.passive_eligible == true)
                             and (other.confidence_tier or other.confidence or group.confidence_tier) == "tier1",
                         groupID = groupID,
+                        itemLevels = other.itemLevels,
                     })
                 end
             end
@@ -143,6 +151,7 @@ function Ontology.AddGroup(groupID, group)
                 hint = group.hint,
                 alternatives = alternatives,
                 groupID = groupID,
+                itemLevels = item.itemLevels,
             })
         end
     end

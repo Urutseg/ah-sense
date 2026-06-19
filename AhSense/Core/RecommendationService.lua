@@ -21,6 +21,7 @@ function RecommendationService.GetForItem(itemID)
         passive_eligible = entry.passive_eligible == true,
         rationale = entry.rationale,
         hint = entry.hint,
+        itemLevels = ns.Util.CopyList(entry.itemLevels),
         alternatives = ns.Util.CopyList(entry.alternatives),
     }
 end

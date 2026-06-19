@@ -46,5 +46,8 @@ ns.events:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_LOGIN" then
         ns.isReady = true
         Dispatch("OnPlayerLogin")
+        return
     end
+
+    Dispatch(event, ...)
 end)

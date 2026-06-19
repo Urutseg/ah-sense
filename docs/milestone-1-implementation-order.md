@@ -19,7 +19,13 @@ This order keeps runtime foundations ahead of data, data ahead of live Auction H
 - Auction House calls are targeted to the current item plus known alternatives and limited by cooldown plus maximum item count.
 - No full-market scan, external sync, automation, buy, sell, or undercut workflow is introduced.
 - Tooltip hints are one line and only appear while the Auction House frame is visible.
-- The comparison panel opens only from an explicit slash command or direct addon API call.
+- The comparison panel opens only from an explicit slash command or direct addon
+  API call. `/ahs <itemID>` is a manual lookup and smoke-test path for the MVP,
+  not the intended long-term primary user workflow.
+- `/ahs debug` toggles chat diagnostics for targeted AH query item IDs, result
+  events, and cached price updates.
+- Item-level variant behavior and real item-key tooltip rendering are documented
+  in `docs/auction-house-runtime-notes.md`.
 
 ## Current Curated Seeds
 
@@ -31,5 +37,7 @@ This order keeps runtime foundations ahead of data, data ahead of live Auction H
 
 - Test tooltip clutter alongside TSM, Auctionator, and CraftSim.
 - Confirm `C_AuctionHouse.SearchForItemKeys` throttle behavior on a live realm.
+- For profession-equipment variant groups, confirm the panel item levels,
+  cached prices, and row tooltips against live AH browse rows.
 - Record any FPS impact during repeated Auction House hover and comparison-panel use.
 - Review seeded item coverage before release; coverage is intentionally small for MVP trust.

@@ -30,3 +30,9 @@ should check `docs/research-data.md` before adding curated data under
 ## Performance Posture
 
 Future implementation should favor targeted queries, caching, throttling, and graceful degradation. Compatibility with common Auction House and crafting addons is a design constraint.
+
+## Runtime AH Notes
+
+Auction House item-key behavior has important edge cases for crafted
+item-level variants and tooltips. Before changing targeted queries, comparison
+panel rows, or tooltip rendering, read `docs/auction-house-runtime-notes.md`.

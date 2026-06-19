@@ -36,6 +36,7 @@ Out of scope for the initial product:
 - `docs/spec.md` - product specification
 - `docs/ontology-curation.md` - rules for verifying and correcting shipped ontology entries
 - `docs/research-data.md` - local Battle.net item database hook for ontology work
+- `docs/auction-house-runtime-notes.md` - live AH item-key, item-level, price-cache, and tooltip notes
 
 ## Development Notes
 

@@ -62,8 +62,8 @@ AddProfessionGroup("midnight-cooking-profession-tool", "Midnight Cooking", "prof
 })
 
 AddProfessionGroup("midnight-enchanting-headwear", "Midnight Enchanting", "headwear profession accessory", {
-    { itemID = 239643, name = "Bright Linen Enchanting Hat" },
-    { itemID = 239637, name = "Elegant Artisan's Enchanting Hat" },
+    { itemID = 239643, name = "Bright Linen Enchanting Hat", itemLevels = { 180, 186, 192, 199, 206 } },
+    { itemID = 239637, name = "Elegant Artisan's Enchanting Hat", itemLevels = { 212, 218, 225, 232, 239 } },
 })
 
 AddProfessionGroup("midnight-enchanting-focus", "Midnight Enchanting", "focus profession accessory", {

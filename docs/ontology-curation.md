@@ -15,6 +15,9 @@ acceptable. Showing a wrong passive hint is not.
 Before adding or keeping an ontology entry, verify:
 
 - The item IDs and names match the current local item DB or an in-game item.
+- For quality-tiered or item-level variant groups, live AH item-key levels have
+  been checked in game. Do not rely on generic item links or static preview
+  levels alone.
 - The items are relevant to the current expansion priority documented in
   `docs/ontology.md`.
 - The group boundary is narrow enough to explain in one sentence.
@@ -100,6 +103,10 @@ npx --package luaparse luaparse AhSense\Data\Ontology.lua
 Also inspect `AhSense/AhSense.toc` when adding data files so load order remains
 `Ontology.lua` before curated data modules.
 
+For Auction House item-key, item-level, or tooltip issues, use
+`docs/auction-house-runtime-notes.md` before changing runtime code or ontology
+variant levels.
+
 ## In-Game Smoke Tests
 
 For each changed group:
@@ -110,3 +117,5 @@ For each changed group:
 - Passive vendor hints appear only in Auction House item tooltips.
 - No errors appear in chat or BugSack/BugGrabber.
 - Rapid repeated `/ahs` calls report cooldown behavior instead of query spam.
+- Item-level variant tooltips match the real Auction House row tooltip; generic
+  wrong-tier item links are not acceptable fallbacks.
