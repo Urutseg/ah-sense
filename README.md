@@ -6,7 +6,7 @@ The product goal is to help players avoid obvious bad purchases, discover conser
 
 ## Current Status
 
-This repository currently contains project scaffolding only. Addon behavior, Lua modules, UI, and data tables have not been implemented yet.
+This repository now contains a Phase 1 MVP spine: addon lifecycle modules, a conservative Lua ontology, small high-confidence seed data, a guarded targeted Auction House query adapter, one-line tooltip hints, and an explicit comparison panel.
 
 ## Scope
 
@@ -28,16 +28,24 @@ Out of scope for the initial product:
 
 - `AhSense/` - addon folder intended to be installed under `Interface/AddOns/AhSense`
 - `AhSense/AhSense.toc` - addon metadata
-- `AhSense/Core/` - future addon lifecycle and shared runtime modules
-- `AhSense/Data/` - future curated ontology and vendor mapping data
-- `AhSense/UI/` - future tooltip, AH, and posting UI modules
+- `AhSense/Core/` - addon lifecycle, configuration, recommendation, and Auction House query modules
+- `AhSense/Data/` - curated ontology and seed vendor, consumable, and profession-tool data
+- `AhSense/UI/` - tooltip hint and comparison panel modules
 - `AhSense/Integrations/` - future optional compatibility layers
 - `docs/` - design notes for architecture, ontology, and releases
 - `docs/spec.md` - product specification
+- `docs/ontology-curation.md` - rules for verifying and correcting shipped ontology entries
+- `docs/research-data.md` - local Battle.net item database hook for ontology work
+- `docs/auction-house-runtime-notes.md` - live AH item-key, item-level, price-cache, and tooltip notes
 
 ## Development Notes
 
 The project should stay fully client-side until there is a clear reason to add external services. Recommendations must be explainable, conservative, and advisory.
+
+Ontology research is Midnight-first. Local Battle.net item pulls can be stored
+under `research/item-db` with `tools/bnet_item_import.py`; generated databases
+and raw payloads are intentionally ignored by git. See `docs/research-data.md`
+and `docs/ontology-curation.md` before adding or expanding ontology groups.
 
 ## License
 

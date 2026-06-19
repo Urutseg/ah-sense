@@ -4,6 +4,11 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Local credentials
+.env
+.env.*
+!.env.example
+
 # Local addon/package output
 dist/
 release/
@@ -18,3 +23,14 @@ Logs/
 .cache/
 .tmp/
 node_modules/
+__pycache__/
+.venv/
+
+# Local research data generated from Battle.net API
+research/item-db/*.sqlite
+research/item-db/*.sqlite-*
+research/item-db/*.jsonl
+research/ontology-review/
+
+AGENTS.md
+outputs/

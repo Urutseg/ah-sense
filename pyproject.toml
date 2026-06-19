@@ -1,0 +1,9 @@
+[project]
+name = "ah-sense-tools"
+version = "0.0.0"
+description = "Local development tools for Auction House Sense ontology research."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false

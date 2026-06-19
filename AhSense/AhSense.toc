@@ -6,3 +6,15 @@
 ## X-Category: Auction
 ## X-License: TBD
 ## SavedVariables: AhSenseDB
+
+Core/Bootstrap.lua
+Core/Util.lua
+Core/Config.lua
+Data/Ontology.lua
+Data/VendorMappings.lua
+Data/Consumables.lua
+Data/ProfessionTools.lua
+Core/RecommendationService.lua
+Core/AuctionHouse.lua
+UI/Tooltip.lua
+UI/ComparisonPanel.lua
