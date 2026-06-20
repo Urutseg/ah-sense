@@ -374,6 +374,15 @@ end
 local function StatusText(itemID, requested, message)
     local status = ns.AuctionHouse.GetLastRequestStatus and ns.AuctionHouse.GetLastRequestStatus(itemID)
     if status then
+        if status.fromCache then
+            return "Using recent AH prices for " .. tostring(status.found) .. " of "
+                .. tostring(status.total) .. " known items."
+        end
+
+        if status.reusedPending then
+            return "AH price check already in progress for " .. tostring(status.total) .. " known items."
+        end
+
         if status.found == 0 and status.pending > 0 then
             return "Checking AH prices for " .. tostring(status.total) .. " known items..."
         end
