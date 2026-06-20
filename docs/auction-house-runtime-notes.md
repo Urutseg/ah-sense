@@ -51,6 +51,29 @@ variant item levels:
 tooltip payload. Treat the `itemKey` as the durable identity and preserve it in
 the cache for later UI rendering.
 
+AhSense keeps a short in-memory price cache keyed by bare `itemID` for commodity
+results and by `itemID:itemLevel` for item-key variants. Cache entries are
+considered fresh for `ns.Config.priceCacheTtlSeconds` seconds and are pruned
+lazily before targeted requests or when the Auction House closes. Reopening the
+comparison panel for the same recommendation group within that TTL reuses the
+cached prices instead of issuing another `SearchForItemKeys` call.
+
+The default TTL is 300 seconds. That is long enough for a normal comparison
+session where a player may inspect several tooltips and think through stats,
+while still short enough that reopening the panel later in the Auction House
+session naturally refreshes market data.
+
+Targeted AH calls are also guarded by `ns.Config.queryCooldownSeconds` and a
+rolling `ns.Config.maxQueriesPerThrottleWindow` limit inside
+`ns.Config.queryThrottleWindowSeconds`. The defaults are meant to prevent
+runaway addon loops without blocking normal player-driven comparison. A user
+who opens several explicit comparisons in a row should usually see requests
+start promptly; the rolling limit should only show up during unusually rapid
+or repeated requests. If an equivalent request is already pending, AhSense
+reuses that pending status rather than starting another query. These limits
+should be tuned after live compatibility testing with TSM, Auctionator, and
+CraftSim.
+
 Category browsing can return unrelated items. AhSense should only cache browse
 results when either:
 

@@ -2,7 +2,10 @@ local _, ns = ...
 
 local Config = {
     passiveConfidence = "tier1",
-    queryCooldownSeconds = 2.5,
+    queryCooldownSeconds = 0.75,
+    queryThrottleWindowSeconds = 10,
+    maxQueriesPerThrottleWindow = 10,
+    priceCacheTtlSeconds = 300,
     maxQueryItems = 12,
 }
 

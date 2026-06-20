@@ -3,6 +3,7 @@ local _, ns = ...
 local AuctionHouse = {
     cache = {},
     pending = {},
+    queryHistory = {},
     lastQueryAt = 0,
     lastRequest = nil,
 }
@@ -74,15 +75,6 @@ local function MakeItemKey(queryItem)
     return { itemID = itemID, itemLevel = itemLevel, itemSuffix = 0, battlePetSpeciesID = 0 }
 end
 
-local function AddUniqueItemID(itemIDs, seen, itemID)
-    if type(itemID) ~= "number" or seen[itemID] then
-        return
-    end
-
-    seen[itemID] = true
-    table.insert(itemIDs, itemID)
-end
-
 local function AddQueryItem(queryItems, seen, item, itemLevel)
     if not item or type(item.itemID) ~= "number" then
         return
@@ -116,6 +108,19 @@ local function AddQueryItemsForRecommendationItem(queryItems, seen, item)
     AddQueryItem(queryItems, seen, item)
 end
 
+local function LimitQueryItems(queryItems)
+    local limited = {}
+    for index, queryItem in ipairs(queryItems) do
+        if index > ns.Config.maxQueryItems then
+            break
+        end
+
+        table.insert(limited, queryItem)
+    end
+
+    return limited
+end
+
 local function Debug(message)
     ns.Debug("AuctionHouse: " .. tostring(message))
 end
@@ -129,26 +134,125 @@ local function JoinQueryItems(queryItems)
     return table.concat(parts, ", ")
 end
 
-local function TrackRequest(rootItemID, queryItems)
+local function IsCacheFresh(cached, now)
+    if not cached or type(cached.updatedAt) ~= "number" then
+        return false
+    end
+
+    return now - cached.updatedAt <= ns.Config.priceCacheTtlSeconds
+end
+
+local function GetFreshCachedEntry(value, itemLevel)
+    local key = CacheKey(value, itemLevel)
+    local cached = key and AuctionHouse.cache[key] or nil
+    if not IsCacheFresh(cached, GetTime and GetTime() or 0) then
+        return nil
+    end
+
+    return cached
+end
+
+local function PruneExpiredCache(now)
+    for key, cached in pairs(AuctionHouse.cache) do
+        if not IsCacheFresh(cached, now) then
+            AuctionHouse.cache[key] = nil
+        end
+    end
+end
+
+local function HasFreshPrices(queryItems, now)
+    if #queryItems == 0 then
+        return false
+    end
+
+    for _, queryItem in ipairs(queryItems) do
+        local cached = AuctionHouse.cache[CacheKey(queryItem.itemID, queryItem.itemLevel)]
+        if not IsCacheFresh(cached, now) then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function HasPendingQuery(queryItems)
+    for _, queryItem in ipairs(queryItems) do
+        local key = CacheKey(queryItem.itemID, queryItem.itemLevel)
+        if key and AuctionHouse.pending[key] then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function PruneQueryHistory(now)
+    local window = ns.Config.queryThrottleWindowSeconds
+    local writeIndex = 1
+    for readIndex = 1, #AuctionHouse.queryHistory do
+        local timestamp = AuctionHouse.queryHistory[readIndex]
+        if now - timestamp <= window then
+            AuctionHouse.queryHistory[writeIndex] = timestamp
+            writeIndex = writeIndex + 1
+        end
+    end
+
+    for index = writeIndex, #AuctionHouse.queryHistory do
+        AuctionHouse.queryHistory[index] = nil
+    end
+end
+
+local function CanStartQuery(now)
+    if now - AuctionHouse.lastQueryAt < ns.Config.queryCooldownSeconds then
+        return false, "Auction House query cooldown active"
+    end
+
+    PruneQueryHistory(now)
+    if #AuctionHouse.queryHistory >= ns.Config.maxQueriesPerThrottleWindow then
+        return false, "Auction House query throttle active"
+    end
+
+    return true
+end
+
+local function RecordQueryStart(now)
+    AuctionHouse.lastQueryAt = now
+    table.insert(AuctionHouse.queryHistory, now)
+end
+
+local function TrackRequest(rootItemID, queryItems, options)
+    options = options or {}
     local request = {
         rootItemID = rootItemID,
         queryItems = ns.Util.CopyList(queryItems),
         pending = {},
         itemIDs = {},
         requestedAt = GetTime and GetTime() or 0,
+        fromCache = options.fromCache == true,
+        reusedPending = options.reusedPending == true,
     }
 
     for _, queryItem in ipairs(queryItems) do
         request.itemIDs[queryItem.itemID] = true
         local key = CacheKey(queryItem.itemID, queryItem.itemLevel)
         if key then
-            request.pending[key] = true
-            AuctionHouse.pending[key] = true
+            if options.markPending then
+                request.pending[key] = true
+                AuctionHouse.pending[key] = true
+            elseif AuctionHouse.pending[key] then
+                request.pending[key] = true
+            end
         end
     end
 
     AuctionHouse.lastRequest = request
-    Debug("querying item keys: " .. JoinQueryItems(queryItems))
+    if options.markPending then
+        Debug("querying item keys: " .. JoinQueryItems(queryItems))
+    elseif options.fromCache then
+        Debug("using cached item keys: " .. JoinQueryItems(queryItems))
+    elseif options.reusedPending then
+        Debug("reusing pending item-key request: " .. JoinQueryItems(queryItems))
+    end
 end
 
 local function ClearPending(value)
@@ -182,12 +286,12 @@ local function IsRequestedItemID(itemID)
 end
 
 function AuctionHouse.GetCachedPrice(value, itemLevel)
-    local cached = AuctionHouse.cache[CacheKey(value, itemLevel)]
+    local cached = GetFreshCachedEntry(value, itemLevel)
     return cached and cached.price or nil
 end
 
 function AuctionHouse.GetCachedEntry(value, itemLevel)
-    return AuctionHouse.cache[CacheKey(value, itemLevel)]
+    return GetFreshCachedEntry(value, itemLevel)
 end
 
 function AuctionHouse.GetLastRequestStatus(itemID)
@@ -200,7 +304,7 @@ function AuctionHouse.GetLastRequestStatus(itemID)
     local pending = 0
     for _, queryItem in ipairs(request.queryItems) do
         local key = CacheKey(queryItem.itemID, queryItem.itemLevel)
-        if key and AuctionHouse.cache[key] then
+        if key and IsCacheFresh(AuctionHouse.cache[key], GetTime and GetTime() or 0) then
             found = found + 1
         elseif key and request.pending[key] then
             pending = pending + 1
@@ -212,6 +316,8 @@ function AuctionHouse.GetLastRequestStatus(itemID)
         found = found,
         pending = pending,
         requestedAt = request.requestedAt,
+        fromCache = request.fromCache,
+        reusedPending = request.reusedPending,
     }
 end
 
@@ -221,9 +327,7 @@ function AuctionHouse.RequestAlternatives(itemID)
     end
 
     local now = GetTime and GetTime() or 0
-    if now - AuctionHouse.lastQueryAt < ns.Config.queryCooldownSeconds then
-        return false, "Auction House query cooldown active"
-    end
+    PruneExpiredCache(now)
 
     local recommendation = ns.Recommendations.GetForItem(itemID)
     if not recommendation or #recommendation.alternatives == 0 then
@@ -236,12 +340,10 @@ function AuctionHouse.RequestAlternatives(itemID)
     for _, alternative in ipairs(recommendation.alternatives) do
         AddQueryItemsForRecommendationItem(queryItems, seen, alternative)
     end
+    queryItems = LimitQueryItems(queryItems)
 
     local keys = {}
-    for index, queryItem in ipairs(queryItems) do
-        if index > ns.Config.maxQueryItems then
-            break
-        end
+    for _, queryItem in ipairs(queryItems) do
         table.insert(keys, MakeItemKey(queryItem))
     end
 
@@ -249,8 +351,23 @@ function AuctionHouse.RequestAlternatives(itemID)
         return false, "No queryable item keys"
     end
 
-    TrackRequest(itemID, queryItems)
-    AuctionHouse.lastQueryAt = now
+    if HasFreshPrices(queryItems, now) then
+        TrackRequest(itemID, queryItems, { fromCache = true })
+        return false, "Using recent AH prices"
+    end
+
+    if HasPendingQuery(queryItems) then
+        TrackRequest(itemID, queryItems, { reusedPending = true })
+        return false, "Auction House query already pending"
+    end
+
+    local canStart, throttleMessage = CanStartQuery(now)
+    if not canStart then
+        return false, throttleMessage
+    end
+
+    TrackRequest(itemID, queryItems, { markPending = true })
+    RecordQueryStart(now)
 
     local ok = pcall(C_AuctionHouse.SearchForItemKeys, keys, {})
     if not ok then
@@ -261,6 +378,16 @@ function AuctionHouse.RequestAlternatives(itemID)
     end
 
     return true
+end
+
+function AuctionHouse.ClearCache()
+    AuctionHouse.cache = {}
+    AuctionHouse.pending = {}
+    AuctionHouse.lastRequest = nil
+end
+
+function AuctionHouse.PruneCache()
+    PruneExpiredCache(GetTime and GetTime() or 0)
 end
 
 function AuctionHouse.RecordPrice(value, price, source, link)
@@ -316,6 +443,7 @@ function module:OnRegister()
     ns.events:RegisterEvent("AUCTION_HOUSE_BROWSE_RESULTS_ADDED")
     ns.events:RegisterEvent("COMMODITY_SEARCH_RESULTS_UPDATED")
     ns.events:RegisterEvent("ITEM_SEARCH_RESULTS_UPDATED")
+    ns.events:RegisterEvent("AUCTION_HOUSE_CLOSED")
 end
 
 function module:AUCTION_HOUSE_BROWSE_RESULTS_UPDATED()
@@ -389,6 +517,12 @@ function module:ITEM_SEARCH_RESULTS_UPDATED(itemKey)
     if lowestPrice then
         AuctionHouse.RecordPrice(itemKey, lowestPrice, "item-search")
     end
+end
+
+function module:AUCTION_HOUSE_CLOSED()
+    AuctionHouse.pending = {}
+    AuctionHouse.lastRequest = nil
+    AuctionHouse.PruneCache()
 end
 
 ns.RegisterModule("AuctionHouse", module)
