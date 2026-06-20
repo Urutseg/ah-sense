@@ -34,6 +34,7 @@ Out of scope for the initial product:
 - `AhSense/Integrations/` - future optional compatibility layers
 - `docs/` - design notes for architecture, ontology, and releases
 - `docs/spec.md` - product specification
+- `docs/seller-surface.md` - Phase 2 seller advisory surface design
 - `docs/ontology-curation.md` - rules for verifying and correcting shipped ontology entries
 - `docs/research-data.md` - local Battle.net item database hook for ontology work
 - `docs/auction-house-runtime-notes.md` - live AH item-key, item-level, price-cache, and tooltip notes

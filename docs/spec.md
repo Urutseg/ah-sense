@@ -231,6 +231,26 @@ Must:
 * avoid blocking user
 * avoid red error styling
 * remain advisory only
+* work as a portable layer across Blizzard Auction House and supported addon
+  sell UIs where practical
+* keep the passive surface tiny; full detail belongs in an explicit sidecar
+
+Seller assistance should restore missing comparison context across selling
+interfaces. The Blizzard sell tab already exposes some same-item quality-tier
+pricing context, while common addon sell UIs may omit that ladder. AhSense should
+use a shared seller evaluator, small surface-specific advisory signals, and one
+shared sidecar panel for evidence.
+
+Allowed only on explicit user action:
+
+* opening the sidecar explanation
+* filling a price field from a selected reference row, if technically safe
+
+Not allowed:
+
+* silently changing the user's price
+* automatically undercutting
+* posting or canceling auctions
 
 ---
 
@@ -505,7 +525,10 @@ Unknown:
 * whether sellers appreciate advisory
 * or perceive it as annoying/noisy
 
-May need opt-in.
+May need opt-in. Initial research should compare default-on tiny advisories with
+the sidecar closed against a fully opt-in seller layer. It should also validate
+whether supported addon sell UIs hide comparison context that Blizzard's sell
+tab already provides.
 
 ---
 
@@ -614,8 +637,11 @@ prove usefulness + trust
 
 ## Phase 2 — Seller Assistance
 
-* posting advisory
-* market saturation hints
+* shared seller evaluator for dominated listing detection
+* portable advisory signals for Blizzard Auction House and supported addon sell
+  UIs
+* shared seller sidecar for explanation and comparisons
+* explicit manual price-fill controls if technically safe
 * lightweight caching
 * optional historical pricing
 

@@ -41,3 +41,13 @@ This order keeps runtime foundations ahead of data, data ahead of live Auction H
   cached prices, and row tooltips against live AH browse rows.
 - Record any FPS impact during repeated Auction House hover and comparison-panel use.
 - Review seeded item coverage before release; coverage is intentionally small for MVP trust.
+
+## Phase 2 Seller Surface Notes
+
+Seller assistance should use a shared evaluator plus thin UI adapters rather
+than a replacement sell tab. The tiny advisory signal can attach to Blizzard
+Auction House and supported addon sell UIs, while a shared sidecar provides full
+comparison evidence. Price fill, if added, must be an explicit user action and
+must never post, undercut, cancel, or silently change the user's price.
+
+See `docs/seller-surface.md` before implementing Phase 2 seller work.
